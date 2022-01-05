@@ -1,6 +1,11 @@
 /*
-
+ * Author: Medeossi Erik
 */
+
+// Includes
+#include <stdio.h>
+#include <stdlib.h>
+
 /**
  * @brief transforms a number belonging to a particular range and transposes it into a new range of numbers
  * 
@@ -16,4 +21,13 @@ long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
 
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+void swap(int *p_a, int *p_b)
+{
+	int t;
+
+	t = *p_a;
+	*p_a = *p_b;
+	*p_b = t;
 }
