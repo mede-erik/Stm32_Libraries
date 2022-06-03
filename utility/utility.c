@@ -5,6 +5,7 @@
 // Includes
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 /**
  * @brief transforms a number belonging to a particular range and transposes it into a new range of numbers
@@ -40,4 +41,36 @@ float kelvin_to_celsius(float kelvin)
 float kelvin_to_Fahrenheit(float kelvin)
 {
 	return (kelvin_to_celsius(kelvin)) * (9 / 5) + 32;
+}
+
+/**
+ * @brief I take the upper bits of a 16-bit integer in order to be able to place a 16-bit integer in two 8-bit integers
+ *
+ * @param a 16-bit int to split
+ * @return uint8_t upper bits of variable a
+ */
+
+uint8_t uint16_to_uint8_up_bits(uint16_t a)
+{
+	uint8_t b;
+
+	b = (uint8_t)(a >> 8);
+
+	return b;
+}
+
+/**
+ * @brief I take the lower bits of a 16-bit integer in order to be able to place a 16-bit integer in two 8-bit integers
+ *
+ * @param a 16-bit int to split
+ * @return uint8_t lower bits of variable a
+ */
+
+uint8_t uint16_to_uint8_down_bits(uint16_t a)
+{
+	uint8_t b;
+
+	b = (uint8_t)(a >> 8);
+
+	return b;
 }
