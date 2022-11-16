@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 /**
- * @brief transforms a number belonging to a particular range and transposes it into a new range of numbers
+ * @brief Re-maps a number from one range to another
  *
- * @param x The number to transpose
- * @param in_min the minimum value of the first interval
- * @param in_max the maximum value of the first interval
- * @param out_min the minimum value of the second interval
- * @param out_max the maximum value of the second interval
+ * @param x the number to map
+ * @param in_min the lower bound of the value’s current range
+ * @param in_max the upper bound of the value’s current range
+ * @param out_min the lower bound of the value’s target range
+ * @param out_max the upper bound of the value’s target range
  * @return long
  */
 
@@ -23,6 +23,13 @@ long map(long x, long in_min, long in_max, long out_min, long out_max)
 
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
+
+/**
+ * @brief swap the two variables
+ *
+ * @param p_a
+ * @param p_b
+ */
 
 void swap(int *p_a, int *p_b)
 {
@@ -33,10 +40,24 @@ void swap(int *p_a, int *p_b)
 	*p_b = t;
 }
 
+/**
+ * @brief converts kelvin degrees to celsius
+ *
+ * @param kelvin
+ * @return float
+ */
+
 float kelvin_to_celsius(float kelvin)
 {
 	return kelvin - 273, 15;
 }
+
+/**
+ * @brief converts kelvin degrees to fahrenheit
+ *
+ * @param kelvin
+ * @return float
+ */
 
 float kelvin_to_Fahrenheit(float kelvin)
 {

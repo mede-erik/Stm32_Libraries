@@ -1,7 +1,7 @@
 
 /*
  * Author: Medeossi Erik
-*/
+ */
 
 // uncomment the library belonging to the stm32 family that is in use
 //#include "stm32g4xx_hal.h"
@@ -47,10 +47,10 @@ static uint16_t const crctable[] =
 
 /**
  * @brief calculates the crc 16 of a datum without using the peripheral Crc
- * 
+ *
  * @param data the data for which the CRC is to be calculated
  * @param len the size of the data
- * @return uint16_t 
+ * @return uint16_t
  */
 
 uint16_t crc16(uint8_t *data, uint16_t len)
