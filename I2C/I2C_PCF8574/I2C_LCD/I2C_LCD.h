@@ -5,6 +5,10 @@
  */
 // TODO add details
 
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+
 static void lcd16x2_i2c_sendCommand(uint8_t command);
 static void lcd16x2_i2c_sendData(uint8_t data);
 bool lcd16x2_i2c_auto_init(I2C_HandleTypeDef *pI2cHandle);
