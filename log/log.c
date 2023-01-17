@@ -1,7 +1,7 @@
 /**
  * @author Medeossi Erik
  * @date 06/12/2022
- *
+ * @link https://github.com/mede-erik/Stm32_Libraries
  */
 
 #include "log.h"

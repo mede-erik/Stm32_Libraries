@@ -1,7 +1,9 @@
 /**
  * @author Medeossi Erik
  * @date 28/11/2022
- * @details
+ * @details Derived from Mohamed Yaqoob's repository
+ * @link Mohamed Yaqoob: https://github.com/MYaqoobEmbedded/STM32-Tutorials
+ * @link https://github.com/mede-erik/Stm32_Libraries
  */
 
 // TODO add details
