@@ -6,8 +6,6 @@
  * @link https://github.com/mede-erik/Stm32_Libraries
  */
 
-// TODO add details
-
 #include "I2C_LCD.h"
 #include <stdio.h>
 #include <string.h>
@@ -51,8 +49,6 @@ static uint8_t LCD_I2C_SLAVE_ADDRESS = 0;
 #define LCD_I2C_SLAVE_ADDRESS_0 0x4E
 #define LCD_I2C_SLAVE_ADDRESS_1 0x7E
 #define LCD_I2C_SLAVE_ADDRESS_2 0x4C
-
-// TODO add new address
 
 /* Private functions */
 static void lcd16x2_i2c_sendCommand(uint8_t command)
