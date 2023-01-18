@@ -2,6 +2,7 @@
  * @author Medeossi Erik
  * @date 06/12/2022
  * @link https://github.com/mede-erik/Stm32_Libraries
+ * @version 0v1
  */
 
 #include "log.h"
@@ -42,6 +43,26 @@ void LOG_print_debug(LOG_HandleTypeDef logHandle, char msg[25])
     if (logHandle.mode >= 4)
     {
         sprintf(long_msg, "%s %s", DEBUG_LABEL, msg);
+        HAL_UART_Transmit(logHandle.uartHandle, long_msg, sizeof(msg), 10);
+    }
+}
+
+void LOG_print_error(LOG_HandleTypeDef logHandle, char msg[25])
+{
+    char long_msg[35];
+    if (logHandle.mode >= 4)
+    {
+        sprintf(long_msg, "%s %s", ERROR_LABEL, msg);
+        HAL_UART_Transmit(logHandle.uartHandle, long_msg, sizeof(msg), 10);
+    }
+}
+
+void LOG_print_fault(LOG_HandleTypeDef logHandle, char msg[25])
+{
+    char long_msg[35];
+    if (logHandle.mode >= 4)
+    {
+        sprintf(long_msg, "%s %s", FAULT_LABEL, msg);
         HAL_UART_Transmit(logHandle.uartHandle, long_msg, sizeof(msg), 10);
     }
 }
