@@ -52,7 +52,7 @@ void swap(int *p_a, int *p_b)
 
 float kelvin_to_celsius(float kelvin)
 {
-	return kelvin - 273, 15;
+	return kelvin - 273.15;
 }
 
 /**
