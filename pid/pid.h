@@ -17,6 +17,15 @@ typedef struct
     float prevError;
     float integral;
 } PID_t;
+/**
+ * @brief The PID_init function initializes the values of a PID_t structure to keep the PID coefficients and the values needed for calculating the PID algorithm
+ *
+ * @param pid pointer to the PID_t structure to be initialized
+ * @param Kp proportional coefficient of the PID. This value affects how the system responds to the current error.
+ * @param Ki integral coefficient of the PID. This value affects how the system responds to cumulative error over time.
+ * @param Kd derivative coefficient of the PID. This value affects how the system responds to error variation over time.
+ * @param setPoint set point, i.e. the reference value that the system tries to reach.
+ */
 
 void PID_init(PID_t *pid, float Kp, float Ki, float Kd, float setPoint);
 
