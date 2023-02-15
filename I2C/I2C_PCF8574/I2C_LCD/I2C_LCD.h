@@ -1,6 +1,7 @@
 /**
  * @author Medeossi Erik
- * @date 28/11/2022
+ * @date 15/02/2023
+ * @version 0.1.1
  * @details Derived from Mohamed Yaqoob's repository
  * @link Mohamed Yaqoob: https://github.com/MYaqoobEmbedded/STM32-Tutorials
  * @link https://github.com/mede-erik/Stm32_Libraries
@@ -9,11 +10,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <main.h>
 
 static void lcd16x2_i2c_sendCommand(uint8_t command);
 static void lcd16x2_i2c_sendData(uint8_t data);
 bool lcd16x2_i2c_auto_init(I2C_HandleTypeDef *pI2cHandle);
-bool lcd16x2_i2c_auto_init(I2C_HandleTypeDef *pI2cHandle, int addr);
+bool lcd16x2_i2c_addr_init(I2C_HandleTypeDef *pI2cHandle, int addr);
 void lcd16x2_i2c_setCursor(uint8_t row, uint8_t col);
 void lcd16x2_i2c_1stLine(void);
 void lcd16x2_i2c_2ndLine(void);

@@ -1,6 +1,7 @@
 /**
  * @author Medeossi Erik
- * @date 28/11/2022
+ * @date 15/02/2023
+ * @version 0.1.1
  * @details Derived from Mohamed Yaqoob's repository
  * @link Mohamed Yaqoob: https://github.com/MYaqoobEmbedded/STM32-Tutorials
  * @link https://github.com/mede-erik/Stm32_Libraries
@@ -141,7 +142,7 @@ bool lcd16x2_i2c_auto_init(I2C_HandleTypeDef *pI2cHandle)
  * @param *pI2cHandle - pointer to HAL I2C handle
  * @param address of lcd
  */
-bool lcd16x2_i2c_auto_init(I2C_HandleTypeDef *pI2cHandle, int addr)
+bool lcd16x2_i2c_addr_init(I2C_HandleTypeDef *pI2cHandle, int addr)
 {
     if (HAL_I2C_IsDeviceReady(lcd16x2_i2cHandle, addr, 5, 500) != HAL_OK)
     {
