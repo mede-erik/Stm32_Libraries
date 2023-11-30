@@ -4,11 +4,6 @@
  * @link https://github.com/mede-erik/Stm32_Libraries
  */
 
-// uncomment the library belonging to the stm32 family that is in use
-// #include "stm32g4xx_hal.h"
-// #include "stm32f1xx_hal.h"
-// #include "stm32f4xx_hal.h"
-// #include "stm32f7xx_hal.h"
 #include "crc.h"
 
 static uint16_t const crctable[] =

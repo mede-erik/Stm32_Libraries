@@ -5,7 +5,6 @@
  * @version 0v1
  */
 
-#include "main.h"
 #include "pid.h"
 
 void PID_init(PID_t *pid, float Kp, float Ki, float Kd, float setPoint)
