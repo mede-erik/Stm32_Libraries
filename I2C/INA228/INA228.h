@@ -46,6 +46,37 @@
 #define CALIBRATION_REG 0x05
 
 #define INA228_RESET 0x8000
+// Define for the operating modes of the INA228 chip
+#define INA228_MODE_POWER_DOWN 0x0000        // Shutdown mode
+#define INA228_MODE_SHUNT_TRIGGER 0x0001     // Shunt voltage trigger mode
+#define INA228_MODE_BUS_TRIGGER 0x0002       // Bus voltage trigger mode
+#define INA228_MODE_SHUNT_BUS_TRIGGER 0x0003 // Shunt and bus voltage trigger mode (continuous counting)
+
+// Number of samples
+#define INA228_AVERAGING_1 0x0000  // Number of samplings: 1
+#define INA228_AVERAGING_4 0x0200  // Number of samplings: 4
+#define INA228_AVERAGING_16 0x0400 // Number of samplings: 16
+#define INA228_AVERAGING_64 0x0600 // Number of samplings: 64
+
+// Definition for the bus voltage conversion time
+#define INA228_BUS_CONV_TIME_140us 0x0000  // 140µs
+#define INA228_BUS_CONV_TIME_204us 0x0040  // 204µs
+#define INA228_BUS_CONV_TIME_332us 0x0080  // 332µs
+#define INA228_BUS_CONV_TIME_588us 0x00C0  // 588µs
+#define INA228_BUS_CONV_TIME_1100us 0x0100 // 1.1ms
+#define INA228_BUS_CONV_TIME_2116us 0x0140 // 2.116ms
+#define INA228_BUS_CONV_TIME_4156us 0x0180 // 4.156ms
+#define INA228_BUS_CONV_TIME_8244us 0x01C0 // 8.244ms
+
+// Definition for the shunt voltage conversion time
+#define INA228_SHUNT_CONV_TIME_140us 0x0000  // 140µs
+#define INA228_SHUNT_CONV_TIME_204us 0x0008  // 204µs
+#define INA228_SHUNT_CONV_TIME_332us 0x0010  // 332µs
+#define INA228_SHUNT_CONV_TIME_588us 0x0018  // 588µs
+#define INA228_SHUNT_CONV_TIME_1100us 0x0020 // 1.1ms
+#define INA228_SHUNT_CONV_TIME_2116us 0x0028 // 2.116ms
+#define INA228_SHUNT_CONV_TIME_4156us 0x0030 // 4.156ms
+#define INA228_SHUNT_CONV_TIME_8244us 0x0038 // 8.244ms
 
 typedef struct
 {
@@ -59,3 +90,11 @@ typedef struct
     float iMax;
     uint16_t calibrationValue;
 } INA228_HandleTypeDef;
+
+HAL_StatusTypeDef INA228_Init(INA228_HandleTypeDef *hina228, I2C_HandleTypeDef *hi2c, uint16_t addr, uint16_t average, uint16_t busConvTime, uint16_t shuntConvTime, uint16_t mode, float rShuntValue, float iMax);
+HAL_StatusTypeDef INA228_Reset(INA228_HandleTypeDef *hina228);
+HAL_StatusTypeDef INA228_Config(INA228_HandleTypeDef *hina228);
+HAL_StatusTypeDef INA228_ReadShuntVoltage(INA228_HandleTypeDef *hina228, float *voltage);
+HAL_StatusTypeDef INA228_ReadCurrent(INA228_HandleTypeDef *hina228, float *current);
+HAL_StatusTypeDef INA228_ReadPower(INA228_HandleTypeDef *hina228, float *power);
+HAL_StatusTypeDef INA228_ReadBusVoltage(INA228_HandleTypeDef *hina228, float *voltage);
