@@ -55,3 +55,23 @@
 #define ST7735_GMCTRN1 0xE1
 #define ST7735_NORON 0x13
 #define ST7735_DISPON 0x29
+#define ST7735_RAMWR 0x2C
+
+typedef struct
+{
+    SPI_HandleTypeDef *hspi;
+    GPIO_TypeDef *ST7735_DC_PORT;
+    uint16_t ST7735_DC_PIN;
+    GPIO_TypeDef *ST7735_CS_PORT;
+    uint16_t ST7735_CS_PIN;
+    GPIO_TypeDef *ST7735_RESET_PORT;
+    uint16_t ST7735_RESET_PIN;
+    unit16_t LCD_width;
+    uint16_t LCD_height;
+
+} ST7735_HandleTypeDef;
+
+HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *hspi, GPIO_TypeDef *ST7735_DC_PORT, uint16_t ST7735_DC_PIN, GPIO_TypeDef *ST7735_CS_PORT, uint16_t ST7735_CS_PIN, GPIO_TypeDef *ST7735_RESET_PORT, uint16_t ST7735_RESET_PIN, unit16_t LCD_width, uint16_t LCD_height);
+void ST7735_Reset(ST7735_HandleTypeDef *hst7735);
+void ST7735_WriteCommand(ST7735_HandleTypeDef *hst7735, uint8_t cmd);
+void ST7735_WriteData(ST7735_HandleTypeDef *hst7735, uint8_t data);
