@@ -64,18 +64,17 @@
 
 #define ST7735_COLOR_BLACK 0x0000
 #define ST7735_COLOR_WHITE 0xFFFF
-#define ST7735_COLOR_RED 0xF800
+#define ST7735_COLOR_BLUE 0xF800
 #define ST7735_COLOR_GREEN 0x07E0
-#define ST7735_COLOR_BLUE 0x001F
-#define ST7735_COLOR_CYAN 0x07FF
+#define ST7735_COLOR_RED 0x001F
+#define ST7735_COLOR_YELLOW 0x07FF
 #define ST7735_COLOR_MAGENTA 0xF81F
-#define ST7735_COLOR_YELLOW 0xFFE0
-#define ST7735_COLOR_ORANGE 0xFC00
+#define ST7735_COLOR_CYAN 0xFFE0
+#define ST7735_COLOR_LIGHTBLUE 0xFC00
 #define ST7735_COLOR_PURPLE 0x8010
 #define ST7735_COLOR_PINK 0xF81F
 #define ST7735_COLOR_GRAY 0x8410
 #define ST7735_COLOR_LIGHTGRAY 0xC618
-#define ST7735_COLOR_DARKGRAY 0x8410
 
 typedef struct
 {
@@ -104,4 +103,5 @@ void ST7735_DrawRectangle(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, u
 void ST7735_DrawTriangle(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint16_t color);
 void ST7735_DrawGraph(ST7735_HandleTypeDef *hst7735, uint8_t *data, uint8_t numPoints, uint16_t color);
 void ST7735_DrawLine(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color);
+uint16_t rgb_to_color(uint8_t red, uint8_t green, uint8_t blue);
 #endif /* INC_ST7735_LCD_H_ */
