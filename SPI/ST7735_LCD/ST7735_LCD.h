@@ -96,7 +96,7 @@ void ST7735_SendCommand(ST7735_HandleTypeDef *hst7735, uint8_t cmd);
 void ST7735_SendData(ST7735_HandleTypeDef *hst7735, uint8_t data);
 void ST7735_WriteText(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, const char *text, uint16_t color);
 HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
-HAL_StatusTypeDef ST7735_FillRect(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t red, uint8_t green, uint8_t blue);
+HAL_StatusTypeDef ST7735_FillRect(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color);
 HAL_StatusTypeDef ST7735_DrawPixel(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint16_t color);
 void ST7735_DrawCircle(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t radius, uint16_t color);
 void ST7735_DrawRectangle(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color);

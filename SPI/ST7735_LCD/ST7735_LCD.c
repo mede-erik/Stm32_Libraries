@@ -29,7 +29,7 @@ void ST7735_SendCommand(ST7735_HandleTypeDef *hst7735, uint8_t cmd)
     HAL_GPIO_WritePin(hst7735->ST7735_DC_PORT, hst7735->ST7735_DC_PIN, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_RESET);
 
-    HAL_SPI_Transmit(hst7735->hspi, &cmd, 1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(hst7735->hspi, &cmd, sizeof(&cmd), HAL_MAX_DELAY);
 
     HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_SET);
 }
@@ -43,13 +43,25 @@ void ST7735_SendData(ST7735_HandleTypeDef *hst7735, uint8_t data)
     HAL_GPIO_WritePin(hst7735->ST7735_DC_PORT, hst7735->ST7735_DC_PIN, GPIO_PIN_SET);
     HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_RESET);
 
-    HAL_SPI_Transmit(hst7735->hspi, &data, 1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(hst7735->hspi, &data, sizeof(&data), HAL_MAX_DELAY);
 
     HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_SET);
 }
 
 HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *hspi, GPIO_TypeDef *ST7735_DC_PORT, uint16_t ST7735_DC_PIN, GPIO_TypeDef *ST7735_CS_PORT, uint16_t ST7735_CS_PIN, GPIO_TypeDef *ST7735_RESET_PORT, uint16_t ST7735_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height)
 {
+    uint8_t data_FRMCTR1[] = {0x01, 0x2C, 0x2D};
+    uint8_t data_FRMCTR2[] = {0x01, 0x2C, 0X2D};
+    uint8_t data_FRMCTR3[] = {0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D};
+    uint8_t data_PWCTR1[] = {0xA2, 0x02, 0x84};
+    uint8_t data_PWCTR3[] = {0x0A, 0x00};
+    uint8_t data_PWCTR4[] = {0x8A, 0x2A};
+    uint8_t data_PWCTR5[] = {0x8A, 0xEE};
+    uint8_t data_RASET[] = {0x00, 0x00, 0x00, 0x7F};
+    uint8_t data_CASET[] = {0x00, 0x00, 0x00, 0x7F};
+    uint8_t data_GMCTRP1[] = {0x02, 0x1c, 0x07, 0x12, 0x37, 0x32, 0x29, 0x2d, 0x29, 0x25, 0x2B, 0x39, 0x00, 0x01, 0x03, 0x10};
+    uint8_t data_GMCTRN1[] = {0x03, 0x1d, 0x07, 0x06, 0x2E, 0x2C, 0x29, 0x2D, 0x2E, 0x2E, 0x37, 0x3F, 0x00, 0x00, 0x02, 0x10};
+
     HAL_StatusTypeDef status = 0x01;
 
     hst7735->hspi = hspi;
@@ -77,45 +89,32 @@ HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *
     HAL_Delay(500);
 
     ST7735_SendCommand(hst7735, ST7735_FRMCTR1); // Frame rate control - normal mode
-    ST7735_SendData(hst7735, 0x01);
-    ST7735_SendData(hst7735, 0x2C);
-    ST7735_SendData(hst7735, 0x2D);
+    ST7735_SendData(hst7735, data_FRMCTR1);
 
     ST7735_SendCommand(hst7735, ST7735_FRMCTR2); // Frame rate control - idle mode
-    ST7735_SendData(hst7735, 0x01);
-    ST7735_SendData(hst7735, 0x2C);
-    ST7735_SendData(hst7735, 0x2D);
+    ST7735_SendData(hst7735, data_FRMCTR2);
 
     ST7735_SendCommand(hst7735, ST7735_FRMCTR3); // Frame rate control - partial mode
-    ST7735_SendData(hst7735, 0x01);
-    ST7735_SendData(hst7735, 0x2C);
-    ST7735_SendData(hst7735, 0x2D);
-    ST7735_SendData(hst7735, 0x01);
-    ST7735_SendData(hst7735, 0x2C);
-    ST7735_SendData(hst7735, 0x2D);
+    ST7735_SendData(hst7735, data_FRMCTR3);
 
     ST7735_SendCommand(hst7735, ST7735_INVCTR); // Display inversion control
     ST7735_SendData(hst7735, 0x07);
 
     ST7735_SendCommand(hst7735, ST7735_PWCTR1); // Power control
-    ST7735_SendData(hst7735, 0xA2);
-    ST7735_SendData(hst7735, 0x02);
-    ST7735_SendData(hst7735, 0x84);
+    ST7735_SendData(hst7735, data_PWCTR1);
 
     ST7735_SendCommand(hst7735, ST7735_PWCTR2); // Power control
     ST7735_SendData(hst7735, 0xC5);
 
     ST7735_SendCommand(hst7735, ST7735_PWCTR3); // Power control
-    ST7735_SendData(hst7735, 0x0A);
-    ST7735_SendData(hst7735, 0x00);
+    ST7735_SendData(hst7735, data_PWCTR3);
 
     ST7735_SendCommand(hst7735, ST7735_PWCTR4); // Power control
-    ST7735_SendData(hst7735, 0x8A);
-    ST7735_SendData(hst7735, 0x2A);
+    ST7735_SendData(hst7735, data_PWCTR4);
 
     ST7735_SendCommand(hst7735, ST7735_PWCTR5); // Power control
-    ST7735_SendData(hst7735, 0x8A);
-    ST7735_SendData(hst7735, 0xEE);
+
+    ST7735_SendData(hst7735, data_PWCTR5);
 
     ST7735_SendCommand(hst7735, ST7735_VMCTR1); // VCOM control
     ST7735_SendData(hst7735, 0x0E);
@@ -126,49 +125,19 @@ HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *
     ST7735_SendData(hst7735, 0x05);             // 16-bit color
 
     ST7735_SendCommand(hst7735, ST7735_MADCTL); // Memory data access control
-    ST7735_SendData(hst7735, 0xC8);             // Row address order
+    ST7735_SendData(hst7735, 0xC0);             // Row address order
 
     ST7735_SendCommand(hst7735, ST7735_CASET); // Column address set
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, 0x7F);
+    ST7735_SendData(hst7735, data_CASET);
 
     ST7735_SendCommand(hst7735, ST7735_RASET); // Row address set
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, 0x7F);
+    ST7735_SendData(hst7735, data_RASET);
 
     ST7735_SendCommand(hst7735, ST7735_GMCTRP1); // Gamma correction
-    ST7735_SendData(hst7735, 0x02);
-    ST7735_SendData(hst7735, 0x1C);
-    ST7735_SendData(hst7735, 0x07);
-    ST7735_SendData(hst7735, 0x12);
-    ST7735_SendData(hst7735, 0x37);
-    ST7735_SendData(hst7735, 0x32);
-    ST7735_SendData(hst7735, 0x29);
-    ST7735_SendData(hst7735, 0x2D);
-    ST7735_SendData(hst7735, 0x29);
-    ST7735_SendData(hst7735, 0x25);
-    ST7735_SendData(hst7735, 0x2B);
-    ST7735_SendData(hst7735, 0x39);
-    ST7735_SendData(hst7735, 0x00);
+    ST7735_SendData(hst7735, data_GMCTRP1);
 
     ST7735_SendCommand(hst7735, ST7735_GMCTRN1); // Gamma correction
-    ST7735_SendData(hst7735, 0x03);
-    ST7735_SendData(hst7735, 0x1D);
-    ST7735_SendData(hst7735, 0x07);
-    ST7735_SendData(hst7735, 0x06);
-    ST7735_SendData(hst7735, 0x2E);
-    ST7735_SendData(hst7735, 0x2C);
-    ST7735_SendData(hst7735, 0x29);
-    ST7735_SendData(hst7735, 0x2D);
-    ST7735_SendData(hst7735, 0x2E);
-    ST7735_SendData(hst7735, 0x2E);
-    ST7735_SendData(hst7735, 0x37);
-    ST7735_SendData(hst7735, 0x3F);
-    ST7735_SendData(hst7735, 0x00);
+    ST7735_SendData(hst7735, data_GMCTRN1);
 
     ST7735_SendCommand(hst7735, ST7735_NORON); // Normal display mode
     HAL_Delay(10);
@@ -225,20 +194,21 @@ HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0
     }
     // Set Window addr
     ST7735_SendCommand(hst7735, ST7735_CASET); // Set Column Address
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, x0 + 2);
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, x1 + 2);
+    uint8_t data[] = {0x00, x0 + 2, 0x00, x1 + 2};
+    ST7735_SendData(hst7735, data);
 
     ST7735_SendCommand(hst7735, ST7735_RASET); // Set Row Address
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, y0 + 1);
-    ST7735_SendData(hst7735, 0x00);
-    ST7735_SendData(hst7735, y1 + 1);
-
+    data[1] = y0 + 1;
+    data[3] = y1 + 1;
+    ST7735_SendData(hst7735, data);
     ST7735_SendCommand(hst7735, ST7735_RAMWR); // Write to RAM
 
     return HAL_OK;
+}
+
+uint16_t rgb_to_color(uint8_t red, uint8_t green, uint8_t blue)
+{
+    return ((uint16_t)red << 11) | ((uint16_t)green << 5) | blue;
 }
 
 /**
@@ -251,7 +221,7 @@ HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0
  * @param green Green component of the color (0-255).
  * @param blue Blue component of the color (0-255).
  */
-HAL_StatusTypeDef ST7735_FillRect(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t red, uint8_t green, uint8_t blue)
+HAL_StatusTypeDef ST7735_FillRect(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color)
 {
 
     if (x >= hst7735->LCD_width || y >= hst7735->LCD_height || (x + width) > hst7735->LCD_width || (y + height) > hst7735->LCD_height)
@@ -261,26 +231,19 @@ HAL_StatusTypeDef ST7735_FillRect(ST7735_HandleTypeDef *hst7735, uint8_t x, uint
     // Set the address window
     ST7735_SetAddrWindow(hst7735, x, y, x + width - 1, y + height - 1);
 
-    // Set the color
-    uint16_t color = ((uint16_t)red << 11) | ((uint16_t)green << 5) | blue;
-
+    uint8_t data[] = {color >> 8, color & 0xFF};
     // Send color to entire rectangle
     HAL_GPIO_WritePin(hst7735->ST7735_DC_PORT, hst7735->ST7735_DC_PIN, GPIO_PIN_SET);
     HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_RESET);
 
     for (uint32_t i = 0; i < (width * height); ++i)
     {
-        HAL_SPI_Transmit(hst7735->hspi, (uint8_t *)&color, 2, HAL_MAX_DELAY);
+        HAL_SPI_Transmit(hst7735->hspi, data, sizeof(data), HAL_MAX_DELAY);
     }
 
     HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_SET);
 
     return HAL_OK;
-}
-
-uint16_t rgb_to_color(uint8_t red, uint8_t green, uint8_t blue)
-{
-    return ((uint16_t)red << 11) | ((uint16_t)green << 5) | blue;
 }
 
 HAL_StatusTypeDef ST7735_DrawPixel(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint16_t color)
@@ -297,8 +260,8 @@ HAL_StatusTypeDef ST7735_DrawPixel(ST7735_HandleTypeDef *hst7735, uint8_t x, uin
     ST7735_SendCommand(hst7735, ST7735_RAMWR);
 
     // Send pixel data (color)
-    ST7735_SendData(hst7735, (uint8_t)(color >> 8)); // Byte alto
-    ST7735_SendData(hst7735, (uint8_t)color);        // Byte basso
+    uint8_t data[] = {color >> 8, color & 0xFF};
+    ST7735_SendData(hst7735, data);
 
     return HAL_OK;
 }
