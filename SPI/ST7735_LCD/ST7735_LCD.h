@@ -94,7 +94,6 @@ HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *
 void ST7735_Reset(ST7735_HandleTypeDef *hst7735);
 void ST7735_SendCommand(ST7735_HandleTypeDef *hst7735, uint8_t cmd);
 void ST7735_SendData(ST7735_HandleTypeDef *hst7735, uint8_t data);
-void ST7735_WriteText(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, const char *text, uint16_t color);
 HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
 HAL_StatusTypeDef ST7735_FillRect(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint16_t color);
 HAL_StatusTypeDef ST7735_DrawPixel(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, uint16_t color);
@@ -104,4 +103,6 @@ void ST7735_DrawTriangle(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, 
 void ST7735_DrawGraph(ST7735_HandleTypeDef *hst7735, uint8_t *data, uint8_t numPoints, uint16_t color);
 void ST7735_DrawLine(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color);
 uint16_t rgb_to_color(uint8_t red, uint8_t green, uint8_t blue);
+void ST7735_WriteText(ST7735_HandleTypeDef *hst7735, uint16_t x, uint16_t y, const char *str, FontDef font, uint16_t color, uint16_t bgcolor);
+void ST7735_WriteChar(ST7735_HandleTypeDef *hst7735, uint16_t x, uint16_t y, char ch, FontDef font, uint16_t color, uint16_t bgcolor);
 #endif /* INC_ST7735_LCD_H_ */

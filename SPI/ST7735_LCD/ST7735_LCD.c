@@ -5,7 +5,7 @@
  */
 
 #include "ST7735_LCD.h"
-#include "Font6x8.h"
+#include "Fonts.h"
 #include "stdlib.h"
 #include "string.h"
 
@@ -148,45 +148,15 @@ HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *
     return status;
 }
 
-/**
- * @brief Write text on the ST7735 display.
- * @param x X-coordinate of the starting point.
- * @param y Y-coordinate of the starting point.
- * @param text String of text to be displayed.
- * @param color Color of the text (16-bit RGB565 format).
- */
-/* The function doesn't work
-void ST7735_WriteText(ST7735_HandleTypeDef *hst7735, uint8_t x, uint8_t y, const char *text, uint16_t color)
-{
-    // Set the address window
-    ST7735_SetAddrWindow(hst7735, x, y, x + (strlen(text) * 6) - 1, y + 8 - 1);
-
-    // Send color to all text
-    HAL_GPIO_WritePin(hst7735->ST7735_DC_PORT, hst7735->ST7735_DC_PIN, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_RESET);
-
-    for (uint32_t i = 0; i < strlen(text); ++i)
-    {
-        for (uint8_t j = 0; j < 6; ++j)
-        {
-            uint8_t pixel_data = Font6x8[(text[i] - 32) * 6 + j];
-            uint16_t pixel_color = (pixel_data & 0x01) ? color : ST7735_COLOR_BLACK;
-
-            HAL_SPI_Transmit(hst7735->hspi, (uint8_t *)&pixel_color, 2, HAL_MAX_DELAY);
-        }
-    }
-
-    HAL_GPIO_WritePin(hst7735->ST7735_CS_PORT, hst7735->ST7735_CS_PIN, GPIO_PIN_SET);
-}
-*/
-/**
- * @brief Set the address window for drawing on the ST7735 display.
- * @param x0 X-coordinate of the top-left corner.
- * @param y0 Y-coordinate of the top-left corner.
- * @param x1 X-coordinate of the bottom-right corner.
- * @param y1 Y-coordinate of the bottom-right corner.
- */
-HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+* /
+    /**
+     * @brief Set the address window for drawing on the ST7735 display.
+     * @param x0 X-coordinate of the top-left corner.
+     * @param y0 Y-coordinate of the top-left corner.
+     * @param x1 X-coordinate of the bottom-right corner.
+     * @param y1 Y-coordinate of the bottom-right corner.
+     */
+    HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     if (x0 >= hst7735->LCD_width || x1 >= hst7735->LCD_width || y0 >= hst7735->LCD_height || y1 >= hst7735->LCD_height)
     {
@@ -414,5 +384,57 @@ void ST7735_DrawLine(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint
             err += dx;
             y0 += sy;
         }
+    }
+}
+
+void ST7735_WriteChar(ST7735_HandleTypeDef *hst7735, uint16_t x, uint16_t y, char ch, FontDef font, uint16_t color, uint16_t bgcolor)
+{
+    uint32_t i, b, j;
+
+    ST7735_SetAddressWindow(&hst7735, x, y, x + font.width - 1, y + font.height - 1);
+
+    for (i = 0; i < font.height; i++)
+    {
+        b = font.data[(ch - 32) * font.height + i];
+        for (j = 0; j < font.width; j++)
+        {
+            if ((b << j) & 0x8000)
+            {
+                uint8_t data[] = {color >> 8, color & 0xFF};
+                ST7735_SendData(&hst7735, data);
+            }
+            else
+            {
+                uint8_t data[] = {bgcolor >> 8, bgcolor & 0xFF};
+                ST7735_SendData(&hst7735, data);
+            }
+        }
+    }
+}
+
+void ST7735_WriteText(ST7735_HandleTypeDef *hst7735, uint16_t x, uint16_t y, const char *str, FontDef font, uint16_t color, uint16_t bgcolor)
+{
+    while (*str)
+    {
+        if (x + font.width >= _width)
+        {
+            x = 0;
+            y += font.height;
+            if (y + font.height >= _height)
+            {
+                break;
+            }
+
+            if (*str == ' ')
+            {
+                // skip spaces in the beginning of the new line
+                str++;
+                continue;
+            }
+        }
+
+        ST7735_WriteChar(&hst7735, x, y, *str, font, color, bgcolor);
+        x += font.width;
+        str++;
     }
 }
