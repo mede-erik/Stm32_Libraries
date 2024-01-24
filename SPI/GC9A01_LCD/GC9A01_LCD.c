@@ -3,3 +3,432 @@
  * @date 17/01/2024
  * @link https://github.com/mede-erik/Stm32_Libraries
  */
+
+#include "GC9A01_LCD.h"
+
+/**
+ * @brief Send data to the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param data Pointer to the data to be sent.
+ * @param size Number of bytes to be sent.
+ */
+void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data)
+{
+    // Set DC pin to high for data mode
+    HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
+
+    // Set CS pin to low to enable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
+
+    // Send data via SPI
+    HAL_SPI_Transmit(display->hspi, data, sizeof(data), HAL_MAX_DELAY);
+
+    // Set CS pin to high to disable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+/**
+ * @brief Send a command to the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param command Command to be sent.
+ */
+void GC9A01_SendCommand(GC9A01_HandleTypeDef *display, uint8_t command)
+{
+    // Set DC pin to low for command mode
+    HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_RESET);
+
+    // Set CS pin to low to enable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
+
+    // Send command via SPI
+    HAL_SPI_Transmit(display->hspi, &command, 1, HAL_MAX_DELAY);
+
+    // Set CS pin to high to disable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+
+/**
+ * @brief Clear the GC9A01 display with a specified color.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param color Color to fill the display with.
+ */
+void GC9A01_Clear(GC9A01_HandleTypeDef *display, uint16_t color)
+{
+    // Set column address range
+    GC9A01_SendCommand(display, 0x2A);
+    uint8_t column_data[] = {0x00, 0x00, (display->LCD_width >> 8) & 0xFF, display->LCD_width & 0xFF};
+    GC9A01_SendData(display, column_data);
+
+    // Set page address range
+    GC9A01_SendCommand(display, 0x2B);
+    uint8_t page_data[] = {0x00, 0x00, (display->LCD_height >> 8) & 0xFF, display->LCD_height & 0xFF};
+    GC9A01_SendData(display, page_data);
+
+    // Memory Write
+    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_WRITE);
+
+    // Set DC pin to high for data mode
+    HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
+
+    // Set CS pin to low to enable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
+
+    // Send color data to fill the display
+    for (uint32_t i = 0; i < (uint32_t)display->LCD_width * display->LCD_height; i++)
+    {
+        HAL_SPI_Transmit(display->hspi, (uint8_t *)&color, sizeof(color), HAL_MAX_DELAY);
+    }
+
+    // Set CS pin to high to disable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+
+void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height)
+{
+    display->hspi = hspi;
+    display->GC9A01_CS_PORT = GC9A01_CS_PORT;
+    display->GC9A01_DC_PORT = GC9A01_DC_PORT;
+    display->GC9A01_RESET_PORT = GC9A01_RESET_PORT;
+    display->GC9A01_DC_PIN = GC9A01_DC_PIN;
+    display->GC9A01_CS_PIN = GC9A01_CS_PIN;
+    display->GC9A01_RESET_PIN = GC9A01_RESET_PIN;
+    display->LCD_height = LCD_height;
+    display->LCD_width = LCD_width;
+
+    // Power On Sequence
+    HAL_Delay(5); // Wait for power stabilization
+
+    // Send Sleep Out command
+    GC9A01_SendCommand(display, GC9A01_CMD_SLEEP_OUT);
+
+    // Wait for Sleep Out exit
+    HAL_Delay(120);
+
+    // Send Display On command
+    GC9A01_SendCommand(display, GC9A01_CMD_DISPLAY_ON);
+    // Memory Access Control
+    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_ACCESS_CTL);
+    GC9A01_SendData(display, (uint8_t[]){0x48}); // Adjust based on your requirements
+    // Pixel Format Set
+    GC9A01_SendCommand(display, GC9A01_CMD_PIXEL_FORMAT);
+    GC9A01_SendData(display, (uint8_t[]){0x55}); // 16-bit RGB565 mode
+    // Colormode Set
+    GC9A01_SendCommand(display, GC9A01_CMD_COLMOD);
+    GC9A01_SendData(display, (uint8_t[]){0x05}); // 16-bit RGB565 mode
+    // Clear the display
+    GC9A01_Clear(display, 0xFFFF); // Fill with white
+}
+
+/**
+ * @brief Convert RGB color to RGB565 format.
+ *
+ * @param red Red component (0-255).
+ * @param green Green component (0-255).
+ * @param blue Blue component (0-255).
+ * @return Color in RGB565 format.
+ */
+uint16_t RGB_to_RGB565(uint8_t red, uint8_t green, uint8_t blue)
+{
+    // Convert 8-bit RGB components to 5-bit (red), 6-bit (green), 5-bit (blue)
+    uint16_t r = (red >> 3) & 0x1F;
+    uint16_t g = (green >> 2) & 0x3F;
+    uint16_t b = (blue >> 3) & 0x1F;
+
+    // Combine the components into RGB565 format
+    return (r << 11) | (g << 5) | b;
+}
+/**
+ * @brief Draw a pixel on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the pixel.
+ * @param y Y coordinate of the pixel.
+ * @param color Color of the pixel.
+ */
+void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t color)
+{
+    // Set column address
+    GC9A01_SendCommand(display, 0x2A);
+    uint8_t column_data[] = {x >> 8, x & 0xFF, ((x + 1) >> 8) & 0xFF, (x + 1) & 0xFF};
+    GC9A01_SendData(display, column_data);
+
+    // Set page address
+    GC9A01_SendCommand(display, 0x2B);
+    uint8_t page_data[] = {y >> 8, y & 0xFF, ((y + 1) >> 8) & 0xFF, (y + 1) & 0xFF};
+    GC9A01_SendData(display, page_data);
+
+    // Memory Write
+    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_WRITE);
+
+    // Set DC pin to high for data mode
+    HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
+
+    // Set CS pin to low to enable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
+
+    // Send color data for the pixel
+    HAL_SPI_Transmit(display->hspi, (uint8_t *)&color, sizeof(color), HAL_MAX_DELAY);
+
+    // Set CS pin to high to disable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+
+/**
+ * @brief Draw an empty rectangle on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the top-left corner.
+ * @param y Y coordinate of the top-left corner.
+ * @param width Width of the rectangle.
+ * @param height Height of the rectangle.
+ * @param color Color of the rectangle.
+ * @return 0 if successful, -1 if the rectangle is too large for the display.
+ */
+int GC9A01_DrawRectangle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color)
+{
+    if ((x + width > display->LCD_width) || (y + height > display->LCD_height))
+    {
+        // Rectangle exceeds display boundaries
+        return -1;
+    }
+
+    for (uint16_t i = 0; i < width; i++)
+    {
+        GC9A01_DrawPixel(display, x + i, y, color);
+        GC9A01_DrawPixel(display, x + i, y + height - 1, color);
+    }
+
+    for (uint16_t i = 0; i < height; i++)
+    {
+        GC9A01_DrawPixel(display, x, y + i, color);
+        GC9A01_DrawPixel(display, x + width - 1, y + i, color);
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Draw a filled rectangle on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the top-left corner.
+ * @param y Y coordinate of the top-left corner.
+ * @param width Width of the rectangle.
+ * @param height Height of the rectangle.
+ * @param color Color of the rectangle.
+ * @return 0 if successful, -1 if the rectangle is too large for the display.
+ */
+int GC9A01_FillRectangle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color)
+{
+    if ((x + width > display->LCD_width) || (y + height > display->LCD_height))
+    {
+        // Rectangle exceeds display boundaries
+        return -1;
+    }
+
+    for (uint16_t i = 0; i < width; i++)
+    {
+        for (uint16_t j = 0; j < height; j++)
+        {
+            GC9A01_DrawPixel(display, x + i, y + j, color);
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Draw an empty circle on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the center.
+ * @param y Y coordinate of the center.
+ * @param radius Radius of the circle.
+ * @param color Color of the circle.
+ * @return 0 if successful, -1 if the circle is too large for the display.
+ */
+int GC9A01_DrawCircle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t radius, uint16_t color)
+{
+    if ((x - radius < 0) || (x + radius >= display->LCD_width) || (y - radius < 0) || (y + radius >= display->LCD_height))
+    {
+        // Circle exceeds display boundaries
+        return -1;
+    }
+
+    int16_t f = 1 - radius;
+    int16_t ddF_x = 1;
+    int16_t ddF_y = -2 * radius;
+    int16_t x1 = 0;
+    int16_t y1 = radius;
+
+    GC9A01_DrawPixel(display, x, y + radius, color);
+    GC9A01_DrawPixel(display, x, y - radius, color);
+    GC9A01_DrawPixel(display, x + radius, y, color);
+    GC9A01_DrawPixel(display, x - radius, y, color);
+
+    while (x1 < y1)
+    {
+        if (f >= 0)
+        {
+            y1--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x1++;
+        ddF_x += 2;
+        f += ddF_x;
+
+        GC9A01_DrawPixel(display, x + x1, y + y1, color);
+        GC9A01_DrawPixel(display, x - x1, y + y1, color);
+        GC9A01_DrawPixel(display, x + x1, y - y1, color);
+        GC9A01_DrawPixel(display, x - x1, y - y1, color);
+
+        GC9A01_DrawPixel(display, x + y1, y + x1, color);
+        GC9A01_DrawPixel(display, x - y1, y + x1, color);
+        GC9A01_DrawPixel(display, x + y1, y - x1, color);
+        GC9A01_DrawPixel(display, x - y1, y - x1, color);
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Draw a filled circle on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the center.
+ * @param y Y coordinate of the center.
+ * @param radius Radius of the circle.
+ * @param color Color of the circle.
+ * @return 0 if successful, -1 if the circle is too large for the display.
+ */
+int GC9A01_FillCircle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t radius, uint16_t color)
+{
+    if ((x - radius < 0) || (x + radius >= display->LCD_width) || (y - radius < 0) || (y + radius >= display->LCD_height))
+    {
+        // Circle exceeds display boundaries
+        return -1;
+    }
+
+    for (int16_t dy = 0; dy <= radius; dy++)
+    {
+        for (int16_t dx = 0; dx <= radius; dx++)
+        {
+            if (dx * dx + dy * dy <= radius * radius)
+            {
+                GC9A01_DrawPixel(display, x + dx, y + dy, color);
+                GC9A01_DrawPixel(display, x - dx, y + dy, color);
+                GC9A01_DrawPixel(display, x + dx, y - dy, color);
+                GC9A01_DrawPixel(display, x - dx, y - dy, color);
+            }
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Draw text on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the top-left corner of the text.
+ * @param y Y coordinate of the top-left corner of the text.
+ * @param text String to be displayed.
+ * @param font Pointer to the font bitmap data.
+ * @param color Color of the text.
+ * @return 0 if successful, -1 if the text is too large for the display.
+ */
+int GC9A01_DrawText(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, const char *text, const uint8_t *font, uint16_t color)
+{
+    // Calculate the width and height of a single character in the font
+    uint8_t char_width = font[0];
+    uint8_t char_height = font[1];
+
+    // Check if the entire text fits within the display
+    if ((x + (strlen(text) * char_width) > display->LCD_width) || (y + char_height > display->LCD_height))
+    {
+        // Text exceeds display boundaries
+        return -1;
+    }
+
+    // Iterate through each character in the string
+    for (size_t i = 0; i < strlen(text); i++)
+    {
+        // Get the ASCII value of the current character
+        uint8_t ascii_value = text[i];
+
+        // Calculate the starting position of the character in the font data
+        uint32_t char_offset = 2 + (ascii_value * ((char_width * char_height) / 8));
+
+        // Draw the character on the display
+        for (uint8_t row = 0; row < char_height; row++)
+        {
+            for (uint8_t col = 0; col < char_width; col++)
+            {
+                // Extract the pixel value from the font data
+                uint8_t pixel = (font[char_offset + (row * (char_width / 8) + (col / 8))] >> (7 - (col % 8))) & 0x01;
+
+                // Draw the pixel on the display
+                if (pixel)
+                {
+                    GC9A01_DrawPixel(display, x + (i * char_width) + col, y + row, color);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+void DrawCustomGauge(GC9A01_HandleTypeDef *display, const Gauge *gauge)
+{
+    // Disegna il cerchio esterno del gauge
+    DrawCircle(gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_BLACK);
+
+    // Calcola l'angolo in base al valore corrente
+    uint16_t angle = gauge->startAngle + ((gauge->currentValue - gauge->minValue) * (gauge->endAngle - gauge->startAngle)) / (gauge->maxValue - gauge->minValue);
+
+    // Calcola la posizione finale dell'indicatore
+    int16_t endX = gauge->x + (gauge->radius * GC9A01_Cosine(angle)) / 256;
+    int16_t endY = gauge->y - (gauge->radius * GC9A01_Sine(angle)) / 256;
+
+    // Disegna la lancetta dell'indicatore
+    DrawLine(gauge->x, gauge->y, endX, endY, GC9A01_COLOR_GREEN);
+
+    // Disegna una piccola freccia alla fine della lancetta (opzionale)
+    DrawLine(endX, endY, endX + 5, endY + 5, GC9A01_COLOR_GREEN);
+    DrawLine(endX, endY, endX - 5, endY + 5, GC9A01_COLOR_GREEN);
+
+    // Disegna la zona rossa se il valore corrente supera la soglia
+    if (gauge->currentValue >= gauge->redZone)
+    {
+        DrawCircle(gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_RED);
+    }
+
+    // Aggiungi testo con le informazioni
+    char valueText[10];
+    sprintf(valueText, "%d %s", gauge->currentValue, gauge->unit);
+    DrawText(gauge->x - 20, gauge->y + gauge->radius + 10, valueText);
+}
+
+void UpdateGaugeValue(GC9A01_HandleTypeDef *display, Gauge *gauge, uint16_t newValue)
+{
+    // Limita il nuovo valore tra il valore minimo e massimo
+    if (newValue < gauge->minValue)
+    {
+        gauge->currentValue = gauge->minValue;
+    }
+    else if (newValue > gauge->maxValue)
+    {
+        gauge->currentValue = gauge->maxValue;
+    }
+    else
+    {
+        gauge->currentValue = newValue;
+    }
+
+    // Disegna il gauge con il nuovo valore
+    DrawCustomGauge(display, gauge);
+}
