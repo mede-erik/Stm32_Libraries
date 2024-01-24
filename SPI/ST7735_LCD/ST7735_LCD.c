@@ -148,15 +148,14 @@ HAL_StatusTypeDef ST7735_Init(ST7735_HandleTypeDef *hst7735, SPI_HandleTypeDef *
     return status;
 }
 
-* /
-    /**
-     * @brief Set the address window for drawing on the ST7735 display.
-     * @param x0 X-coordinate of the top-left corner.
-     * @param y0 Y-coordinate of the top-left corner.
-     * @param x1 X-coordinate of the bottom-right corner.
-     * @param y1 Y-coordinate of the bottom-right corner.
-     */
-    HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+/**
+ * @brief Set the address window for drawing on the ST7735 display.
+ * @param x0 X-coordinate of the top-left corner.
+ * @param y0 Y-coordinate of the top-left corner.
+ * @param x1 X-coordinate of the bottom-right corner.
+ * @param y1 Y-coordinate of the bottom-right corner.
+ */
+HAL_StatusTypeDef ST7735_SetAddrWindow(ST7735_HandleTypeDef *hst7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
     if (x0 >= hst7735->LCD_width || x1 >= hst7735->LCD_width || y0 >= hst7735->LCD_height || y1 >= hst7735->LCD_height)
     {
@@ -416,11 +415,11 @@ void ST7735_WriteText(ST7735_HandleTypeDef *hst7735, uint16_t x, uint16_t y, con
 {
     while (*str)
     {
-        if (x + font.width >= _width)
+        if (x + font.width >= hst7735->LCD_width)
         {
             x = 0;
             y += font.height;
-            if (y + font.height >= _height)
+            if (y + font.height >= hst7735->LCD_height)
             {
                 break;
             }

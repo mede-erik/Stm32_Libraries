@@ -7,6 +7,7 @@
 #define INC_ST7735_LCD_H_
 
 #include "main.h"
+#include "Fonts.h"
 
 #ifdef STM32F0
 #include "stm32f0xx_hal.h" /* Import HAL library */
