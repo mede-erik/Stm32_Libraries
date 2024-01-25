@@ -136,7 +136,7 @@ const uint8_t font_6x8[] = {
     0x03, 0x04, 0x78, 0x04, 0x03, 0x00, // Y
     0x61, 0x51, 0x49, 0x45, 0x43, 0x00, // Z
     0x7F, 0x41, 0x41, 0x00, 0x00, 0x00, // [
-    0x02, 0x04, 0x08, 0x10, 0x20, 0x00, // \
+    0x02, 0x04, 0x08, 0x10, 0x20, 0x00, //
     0x41, 0x41, 0x7F, 0x00, 0x00, 0x00, // ]
     0x04, 0x02, 0x01, 0x02, 0x04, 0x00, // ^
     0x40, 0x40, 0x40, 0x40, 0x40, 0x40, // _
@@ -198,7 +198,9 @@ int GC9A01_FillRectangle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, 
 int GC9A01_DrawCircle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t radius, uint16_t color);
 int GC9A01_FillCircle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t radius, uint16_t color);
 int GC9A01_DrawText(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, const char *text, const uint8_t *font, uint16_t color);
-void DrawCustomGauge(GC9A01_HandleTypeDef *display, const Gauge *gauge);
+int16_t GC9A01_Cosine(uint16_t angle);
+int16_t GC9A01_Sine(uint16_t angle);
+void DrawCustomGauge(GC9A01_HandleTypeDef *display, Gauge *gauge);
 void UpdateGaugeValue(GC9A01_HandleTypeDef *display, Gauge *gauge, uint16_t newValue);
 
 #endif /* INC_GC9A01_LCD_H_ */

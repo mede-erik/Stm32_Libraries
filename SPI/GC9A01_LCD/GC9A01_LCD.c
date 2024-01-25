@@ -5,7 +5,10 @@
  */
 
 #include "GC9A01_LCD.h"
-
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 /**
  * @brief Send data to the GC9A01 display.
  *
@@ -173,6 +176,53 @@ void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uin
 
     // Set CS pin to high to disable the device
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+
+/**
+ * @brief Draws a line on the GC9A01 display between two points.
+ *
+ * This function draws a straight line between two specified points on the display.
+ *
+ * @param x1 The x-coordinate of the starting point.
+ * @param y1 The y-coordinate of the starting point.
+ * @param x2 The x-coordinate of the ending point.
+ * @param y2 The y-coordinate of the ending point.
+ * @param color The color of the line.
+ */
+void GC9A01_DrawLine(GC9A01_HandleTypeDef *display, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
+{
+    int16_t dx = abs(x2 - x1);
+    int16_t sx = x1 < x2 ? 1 : -1;
+    int16_t dy = -abs(y2 - y1);
+    int16_t sy = y1 < y2 ? 1 : -1;
+    int16_t err = dx + dy; /* error value e_xy */
+
+    while (1)
+    {
+        // Draw the current point
+        GC9A01_DrawPixel(display, x1, y1, color);
+
+        // Check if you have reached your destination
+        if (x1 == x2 && y1 == y2)
+        {
+            break;
+        }
+
+        int16_t e2 = 2 * err;
+
+        // Calculate the next coordinate based on the error
+        if (e2 >= dy)
+        {
+            err += dy;
+            x1 += sx;
+        }
+
+        if (e2 <= dx)
+        {
+            err += dx;
+            y1 += sy;
+        }
+    }
 }
 
 /**
@@ -382,35 +432,86 @@ int GC9A01_DrawText(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, const
     return 0;
 }
 
-void DrawCustomGauge(GC9A01_HandleTypeDef *display, const Gauge *gauge)
+/**
+ * @brief Calculates the sine of the given angle in degrees.
+ *
+ * This function calculates the sine of the input angle using the standard math library function.
+ *
+ * @param angle The input angle in degrees.
+ * @return The sine value in a 16-bit representation (scaled by 256).
+ */
+int16_t GC9A01_Sine(uint16_t angle)
 {
-    // Disegna il cerchio esterno del gauge
-    DrawCircle(gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_BLACK);
+    // Normalize the angle to [0, 359]
+    angle %= 360;
 
-    // Calcola l'angolo in base al valore corrente
-    uint16_t angle = gauge->startAngle + ((gauge->currentValue - gauge->minValue) * (gauge->endAngle - gauge->startAngle)) / (gauge->maxValue - gauge->minValue);
+    // Calculate the sine of the normalized angle
+    double radians = angle * M_PI / 180.0; // Convert degrees to radians
+    double sineValue = sin(radians);
 
-    // Calcola la posizione finale dell'indicatore
+    // Normalize the result and convert to a 16-bit representation
+    return (int16_t)(sineValue * 256.0);
+}
+
+/**
+ * @brief Calculates the cosine of the given angle in degrees.
+ *
+ * This function calculates the cosine of the input angle using the standard math library function.
+ *
+ * @param angle The input angle in degrees.
+ * @return The cosine value in a 16-bit representation (scaled by 256).
+ */
+int16_t GC9A01_Cosine(uint16_t angle)
+{
+    // Normalize the angle to [0, 359]
+    angle %= 360;
+
+    // Calculate the cosine of the normalized angle
+    double radians = angle * M_PI / 180.0; // Convert degrees to radians
+    double cosineValue = cos(radians);
+
+    // Normalize the result and convert to a 16-bit representation
+    return (int16_t)(cosineValue * 256.0);
+}
+
+/**
+ * @brief Draws a custom gauge on the display.
+ *
+ * This function draws a gauge with an indicator, a red zone, and textual information.
+ *
+ * @param gauge Pointer to the CustomGauge structure containing gauge information.
+ */
+void DrawCustomGauge(GC9A01_HandleTypeDef *display, Gauge *gauge)
+{
+    // Draw the outer circle of the gauge
+    GC9A01_DrawCircle(display, gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_BLACK);
+
+    // Calculate the angle for the indicator based on the current value
+    uint16_t angle = gauge->startAngle + ((gauge->currentValue - gauge->minValue) *
+                                          (gauge->endAngle - gauge->startAngle)) /
+                                             (gauge->maxValue - gauge->minValue);
+
+    // Calculate the position of the indicator
     int16_t endX = gauge->x + (gauge->radius * GC9A01_Cosine(angle)) / 256;
     int16_t endY = gauge->y - (gauge->radius * GC9A01_Sine(angle)) / 256;
 
-    // Disegna la lancetta dell'indicatore
-    DrawLine(gauge->x, gauge->y, endX, endY, GC9A01_COLOR_GREEN);
+    // Draw the indicator line
+    GC9A01_DrawLine(display, gauge->x, gauge->y, endX, endY, GC9A01_COLOR_GREEN);
 
-    // Disegna una piccola freccia alla fine della lancetta (opzionale)
-    DrawLine(endX, endY, endX + 5, endY + 5, GC9A01_COLOR_GREEN);
-    DrawLine(endX, endY, endX - 5, endY + 5, GC9A01_COLOR_GREEN);
+    // Draw a small arrow at the end of the indicator (optional)
+    GC9A01_DrawLine(display, endX, endY, endX + 5, endY + 5, GC9A01_COLOR_GREEN);
+    GC9A01_DrawLine(display, endX, endY, endX - 5, endY + 5, GC9A01_COLOR_GREEN);
 
-    // Disegna la zona rossa se il valore corrente supera la soglia
+    // Draw the red zone if the current value exceeds the threshold
     if (gauge->currentValue >= gauge->redZone)
     {
-        DrawCircle(gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_RED);
+        GC9A01_DrawCircle(display, gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_RED);
     }
 
-    // Aggiungi testo con le informazioni
-    char valueText[10];
-    sprintf(valueText, "%d %s", gauge->currentValue, gauge->unit);
-    DrawText(gauge->x - 20, gauge->y + gauge->radius + 10, valueText);
+    // Add text with gauge information
+    char valueText[20];
+    snprintf(valueText, sizeof(valueText), "%d %s", gauge->currentValue, gauge->unit);
+    GC9A01_DrawText(display, gauge->x - 20, gauge->y + gauge->radius + 10, valueText, font_6x8, GC9A01_COLOR_WHITE);
 }
 
 void UpdateGaugeValue(GC9A01_HandleTypeDef *display, Gauge *gauge, uint16_t newValue)
