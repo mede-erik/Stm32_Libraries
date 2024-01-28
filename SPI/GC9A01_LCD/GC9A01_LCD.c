@@ -100,6 +100,7 @@ void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_Ty
     display->LCD_height = LCD_height;
     display->LCD_width = LCD_width;
 
+    HAL_SPI_Init(&hspi);
     // Power On Sequence
     HAL_Delay(5); // Wait for power stabilization
 
