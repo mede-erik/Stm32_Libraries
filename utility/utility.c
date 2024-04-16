@@ -20,7 +20,6 @@
  * @param out_max the upper bound of the value’s target range
  * @return long
  */
-
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
 
@@ -33,7 +32,6 @@ long map(long x, long in_min, long in_max, long out_min, long out_max)
  * @param p_a
  * @param p_b
  */
-
 void swap(int *p_a, int *p_b)
 {
 	int t;
@@ -49,7 +47,6 @@ void swap(int *p_a, int *p_b)
  * @param kelvin
  * @return float
  */
-
 float kelvin_to_celsius(float kelvin)
 {
 	return kelvin - 273.15;
@@ -61,7 +58,6 @@ float kelvin_to_celsius(float kelvin)
  * @param kelvin
  * @return float
  */
-
 float kelvin_to_Fahrenheit(float kelvin)
 {
 	return (kelvin_to_celsius(kelvin)) * (9 / 5) + 32;
@@ -73,7 +69,6 @@ float kelvin_to_Fahrenheit(float kelvin)
  * @param a 16-bit int to split
  * @return uint8_t upper bits of variable a
  */
-
 uint8_t uint16_to_uint8_up_bits(uint16_t a)
 {
 	uint8_t b;
@@ -89,7 +84,6 @@ uint8_t uint16_to_uint8_up_bits(uint16_t a)
  * @param a 16-bit int to split
  * @return uint8_t lower bits of variable a
  */
-
 uint8_t uint16_to_uint8_down_bits(uint16_t a)
 {
 	uint8_t b;
