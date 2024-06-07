@@ -16,7 +16,7 @@
  * @param data Pointer to the data to be sent.
  * @param size Number of bytes to be sent.
  */
-void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data)
+void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data,size_t len)
 {
     // Set DC pin to high for data mode
     HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
@@ -25,7 +25,7 @@ void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data)
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
 
     // Send data via SPI
-    HAL_SPI_Transmit(display->hspi, data, sizeof(data), HAL_MAX_DELAY);
+    HAL_SPI_Transmit(display->hspi, data, len, 100);
 
     // Set CS pin to high to disable the device
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
@@ -45,10 +45,14 @@ void GC9A01_SendCommand(GC9A01_HandleTypeDef *display, uint8_t command)
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
 
     // Send command via SPI
-    HAL_SPI_Transmit(display->hspi, &command, 1, HAL_MAX_DELAY);
+    HAL_SPI_Transmit(display->hspi, &command, sizeof(command), 100);
 
     // Set CS pin to high to disable the device
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+
+static inline void GC9A01_SendByte(uint8_t val) {
+    GC9A01_SendData(&val, sizeof(val));
 }
 
 /**
@@ -88,7 +92,7 @@ void GC9A01_Clear(GC9A01_HandleTypeDef *display, uint16_t color)
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
 }
 
-void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height)
+void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height,int oreientation)
 {
     display->hspi = hspi;
     display->GC9A01_CS_PORT = GC9A01_CS_PORT;
@@ -104,25 +108,255 @@ void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_Ty
     // Power On Sequence
     HAL_Delay(5); // Wait for power stabilization
 
-    // Send Sleep Out command
-    GC9A01_SendCommand(display, GC9A01_CMD_SLEEP_OUT);
+    GC9A01_SendCommand(0xEF);
+    
+    GC9A01_SendCommand(0xEB);
+    GC9A01_SendByte(0x14);
+    
+    GC9A01_SendCommand(0xFE);
+    GC9A01_SendCommand(0xEF);
+    
+    GC9A01_SendCommand(0xEB);
+    GC9A01_SendByte(0x14);
+    
+    GC9A01_SendCommand(0x84);
+    GC9A01_SendByte(0x40);
+    
+    GC9A01_SendCommand(0x85);
+    GC9A01_SendByte(0xFF);
+    
+    GC9A01_SendCommand(0x86);
+    GC9A01_SendByte(0xFF);
+    
+    GC9A01_SendCommand(0x87);
+    GC9A01_SendByte(0xFF);
+    
+    GC9A01_SendCommand(0x88);
+    GC9A01_SendByte(0x0A);
+    
+    GC9A01_SendCommand(0x89);
+    GC9A01_SendByte(0x21);
+    
+    GC9A01_SendCommand(0x8A);
+    GC9A01_SendByte(0x00);
+    
+    GC9A01_SendCommand(0x8B);
+    GC9A01_SendByte(0x80);
+    
+    GC9A01_SendCommand(0x8C);
+    GC9A01_SendByte(0x01);
+    
+    GC9A01_SendCommand(0x8D);
+    GC9A01_SendByte(0x01);
+    
+    GC9A01_SendCommand(0x8E);
+    GC9A01_SendByte(0xFF);
+    
+    GC9A01_SendCommand(0x8F);
+    GC9A01_SendByte(0xFF);
+    
+    
+    GC9A01_SendCommand(0xB6);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x00);
+    
+    GC9A01_SendCommand(0x36);
 
-    // Wait for Sleep Out exit
+    switch (orirntation)
+    {
+    case 0:
+        GC9A01_SendByte(0x18);
+        break;
+    case 1:
+        GC9A01_SendByte(0x28);
+        break;
+    case 2:
+        GC9A01_SendByte(0x48);
+        break;
+    case 3:
+        GC9A01_SendByte(0x88);
+        break;
+    default:
+        break;
+    }
+
+    GC9A01_SendCommand(GC9A01_CMD_COLMOD);
+    GC9A01_SendByte(GC9A01_CMD_COLMOD_18_BIT);
+    
+    GC9A01_SendCommand(0x90);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x08);
+    
+    GC9A01_SendCommand(0xBD);
+    GC9A01_SendByte(0x06);
+    
+    GC9A01_SendCommand(0xBC);
+    GC9A01_SendByte(0x00);
+    
+    GC9A01_SendCommand(0xFF);
+    GC9A01_SendByte(0x60);
+    GC9A01_SendByte(0x01);
+    GC9A01_SendByte(0x04);
+    
+    GC9A01_SendCommand(0xC3);
+    GC9A01_SendByte(0x13);
+    GC9A01_SendCommand(0xC4);
+    GC9A01_SendByte(0x13);
+    
+    GC9A01_SendCommand(0xC9);
+    GC9A01_SendByte(0x22);
+    
+    GC9A01_SendCommand(0xBE);
+    GC9A01_SendByte(0x11);
+    
+    GC9A01_SendCommand(0xE1);
+    GC9A01_SendByte(0x10);
+    GC9A01_SendByte(0x0E);
+    
+    GC9A01_SendCommand(0xDF);
+    GC9A01_SendByte(0x21);
+    GC9A01_SendByte(0x0c);
+    GC9A01_SendByte(0x02);
+    
+    GC9A01_SendCommand(0xF0);
+    GC9A01_SendByte(0x45);
+    GC9A01_SendByte(0x09);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x26);
+    GC9A01_SendByte(0x2A);
+
+    GC9A01_SendCommand(0xF1);
+    GC9A01_SendByte(0x43);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x72);
+    GC9A01_SendByte(0x36);
+    GC9A01_SendByte(0x37);
+    GC9A01_SendByte(0x6F);
+    
+    GC9A01_SendCommand(0xF2);
+    GC9A01_SendByte(0x45);
+    GC9A01_SendByte(0x09);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x26);
+    GC9A01_SendByte(0x2A);
+    
+    GC9A01_SendCommand(0xF3);
+    GC9A01_SendByte(0x43);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x72);
+    GC9A01_SendByte(0x36);
+    GC9A01_SendByte(0x37);
+    GC9A01_SendByte(0x6F);
+    
+    GC9A01_SendCommand(0xED);
+    GC9A01_SendByte(0x1B);
+    GC9A01_SendByte(0x0B);
+    
+    GC9A01_SendCommand(0xAE);
+    GC9A01_SendByte(0x77);
+    
+    GC9A01_SendCommand(0xCD);
+    GC9A01_SendByte(0x63);
+    
+    GC9A01_SendCommand(0x70);
+    GC9A01_SendByte(0x07);
+    GC9A01_SendByte(0x07);
+    GC9A01_SendByte(0x04);
+    GC9A01_SendByte(0x0E);
+    GC9A01_SendByte(0x0F);
+    GC9A01_SendByte(0x09);
+    GC9A01_SendByte(0x07);
+    GC9A01_SendByte(0x08);
+    GC9A01_SendByte(0x03);
+    
+    GC9A01_SendCommand(0xE8);
+    GC9A01_SendByte(0x34);
+    
+    GC9A01_SendCommand(0x62);
+    GC9A01_SendByte(0x18);
+    GC9A01_SendByte(0x0D);
+    GC9A01_SendByte(0x71);
+    GC9A01_SendByte(0xED);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x18);
+    GC9A01_SendByte(0x0F);
+    GC9A01_SendByte(0x71);
+    GC9A01_SendByte(0xEF);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x70);
+    
+    GC9A01_SendCommand(0x63);
+    GC9A01_SendByte(0x18);
+    GC9A01_SendByte(0x11);
+    GC9A01_SendByte(0x71);
+    GC9A01_SendByte(0xF1);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x18);
+    GC9A01_SendByte(0x13);
+    GC9A01_SendByte(0x71);
+    GC9A01_SendByte(0xF3);
+    GC9A01_SendByte(0x70);
+    GC9A01_SendByte(0x70);
+    
+    GC9A01_SendCommand(0x64);
+    GC9A01_SendByte(0x28);
+    GC9A01_SendByte(0x29);
+    GC9A01_SendByte(0xF1);
+    GC9A01_SendByte(0x01);
+    GC9A01_SendByte(0xF1);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x07);
+    
+    GC9A01_SendCommand(0x66);
+    GC9A01_SendByte(0x3C);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0xCD);
+    GC9A01_SendByte(0x67);
+    GC9A01_SendByte(0x45);
+    GC9A01_SendByte(0x45);
+    GC9A01_SendByte(0x10);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x00);
+    
+    GC9A01_SendCommand(0x67);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x3C);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x01);
+    GC9A01_SendByte(0x54);
+    GC9A01_SendByte(0x10);
+    GC9A01_SendByte(0x32);
+    GC9A01_SendByte(0x98);
+    
+    GC9A01_SendCommand(0x74);
+    GC9A01_SendByte(0x10);
+    GC9A01_SendByte(0x85);
+    GC9A01_SendByte(0x80);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x00);
+    GC9A01_SendByte(0x4E);
+    GC9A01_SendByte(0x00);
+    
+    GC9A01_SendCommand(0x98);
+    GC9A01_SendByte(0x3e);
+    GC9A01_SendByte(0x07);
+    
+    GC9A01_SendCommand(0x35);
+    GC9A01_SendCommand(0x21);
+    
+    GC9A01_SendCommand(0x11);
     HAL_Delay(120);
-
-    // Send Display On command
-    GC9A01_SendCommand(display, GC9A01_CMD_DISPLAY_ON);
-    // Memory Access Control
-    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_ACCESS_CTL);
-    GC9A01_SendData(display, (uint8_t[]){0x48}); // Adjust based on your requirements
-    // Pixel Format Set
-    GC9A01_SendCommand(display, GC9A01_CMD_PIXEL_FORMAT);
-    GC9A01_SendData(display, (uint8_t[]){0x55}); // 16-bit RGB565 mode
-    // Colormode Set
-    GC9A01_SendCommand(display, GC9A01_CMD_COLMOD);
-    GC9A01_SendData(display, (uint8_t[]){0x05}); // 16-bit RGB565 mode
-    // Clear the display
-    GC9A01_Clear(display, 0xFFFF); // Fill with white
+    GC9A01_SendCommand(0x29);
+    HAL_Delay(20);
 }
 
 /**
