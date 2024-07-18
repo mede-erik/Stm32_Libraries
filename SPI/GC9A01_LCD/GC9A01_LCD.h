@@ -188,10 +188,10 @@ typedef struct
     const char *unit;      // Unità di misura
 } Gauge;
 
-void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data);
+void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data,size_t len)
 void GC9A01_SendCommand(GC9A01_HandleTypeDef *display, uint8_t command);
 void GC9A01_Clear(GC9A01_HandleTypeDef *display, uint16_t color);
-void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height);
+void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height,int oreientation);
 uint16_t RGB_to_RGB565(uint8_t red, uint8_t green, uint8_t blue);
 void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t color);
 int GC9A01_DrawRectangle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color);

@@ -51,7 +51,8 @@ void GC9A01_SendCommand(GC9A01_HandleTypeDef *display, uint8_t command)
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
 }
 
-static inline void GC9A01_SendByte(uint8_t val) {
+static inline void GC9A01_SendByte(uint8_t val) 
+{
     GC9A01_SendData(&val, sizeof(val));
 }
 
@@ -722,9 +723,7 @@ void DrawCustomGauge(GC9A01_HandleTypeDef *display, Gauge *gauge)
     GC9A01_DrawCircle(display, gauge->x, gauge->y, gauge->radius, GC9A01_COLOR_BLACK);
 
     // Calculate the angle for the indicator based on the current value
-    uint16_t angle = gauge->startAngle + ((gauge->currentValue - gauge->minValue) *
-                                          (gauge->endAngle - gauge->startAngle)) /
-                                             (gauge->maxValue - gauge->minValue);
+    uint16_t angle = gauge->startAngle + ((gauge->currentValue - gauge->minValue) * (gauge->endAngle - gauge->startAngle)) / (gauge->maxValue - gauge->minValue);
 
     // Calculate the position of the indicator
     int16_t endX = gauge->x + (gauge->radius * GC9A01_Cosine(angle)) / 256;
