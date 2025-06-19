@@ -5,6 +5,7 @@
  */
 
  #include "ILI9341_LCD.h"
+#include <atomic>
 
 /**
  * @brief Sends a command byte to the ILI9341 LCD controller via SPI.
