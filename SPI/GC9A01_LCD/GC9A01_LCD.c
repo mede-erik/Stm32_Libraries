@@ -109,254 +109,254 @@ void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_Ty
     // Power On Sequence
     HAL_Delay(5); // Wait for power stabilization
 
-    GC9A01_SendCommand(0xEF);
+    GC9A01_SendCommand(display,0xEF);
     
-    GC9A01_SendCommand(0xEB);
-    GC9A01_SendByte(0x14);
+    GC9A01_SendCommand(display,0xEB);
+    GC9A01_SendByte(display,0x14);
     
-    GC9A01_SendCommand(0xFE);
-    GC9A01_SendCommand(0xEF);
+    GC9A01_SendCommand(display,0xFE);
+    GC9A01_SendCommand(display,0xEF);
     
-    GC9A01_SendCommand(0xEB);
-    GC9A01_SendByte(0x14);
+    GC9A01_SendCommand(display,0xEB);
+    GC9A01_SendByte(display,0x14);
     
-    GC9A01_SendCommand(0x84);
-    GC9A01_SendByte(0x40);
+    GC9A01_SendCommand(display,0x84);
+    GC9A01_SendByte(display,0x40);
     
-    GC9A01_SendCommand(0x85);
-    GC9A01_SendByte(0xFF);
+    GC9A01_SendCommand(display,0x85);
+    GC9A01_SendByte(display,0xFF);
     
-    GC9A01_SendCommand(0x86);
-    GC9A01_SendByte(0xFF);
+    GC9A01_SendCommand(display,0x86);
+    GC9A01_SendByte(display,0xFF);
     
-    GC9A01_SendCommand(0x87);
-    GC9A01_SendByte(0xFF);
+    GC9A01_SendCommand(display,0x87);
+    GC9A01_SendByte(display,0xFF);
     
-    GC9A01_SendCommand(0x88);
-    GC9A01_SendByte(0x0A);
+    GC9A01_SendCommand(display,0x88);
+    GC9A01_SendByte(display,0x0A);
     
-    GC9A01_SendCommand(0x89);
-    GC9A01_SendByte(0x21);
+    GC9A01_SendCommand(display,0x89);
+    GC9A01_SendByte(display,0x21);
     
-    GC9A01_SendCommand(0x8A);
-    GC9A01_SendByte(0x00);
+    GC9A01_SendCommand(display,0x8A);
+    GC9A01_SendByte(display,0x00);
     
-    GC9A01_SendCommand(0x8B);
-    GC9A01_SendByte(0x80);
-    
-    GC9A01_SendCommand(0x8C);
-    GC9A01_SendByte(0x01);
-    
-    GC9A01_SendCommand(0x8D);
-    GC9A01_SendByte(0x01);
-    
-    GC9A01_SendCommand(0x8E);
-    GC9A01_SendByte(0xFF);
-    
-    GC9A01_SendCommand(0x8F);
-    GC9A01_SendByte(0xFF);
-    
-    
-    GC9A01_SendCommand(0xB6);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x00);
-    
-    GC9A01_SendCommand(0x36);
+    GC9A01_SendCommand(display,0x8B);
+    GC9A01_SendByte(display,0x80);
 
-    switch (orirntation)
+    GC9A01_SendCommand(display,0x8C);
+    GC9A01_SendByte(display,0x01);
+
+    GC9A01_SendCommand(display,0x8D);
+    GC9A01_SendByte(display,0x01);
+
+    GC9A01_SendCommand(display,0x8E);
+    GC9A01_SendByte(display,0xFF);
+
+    GC9A01_SendCommand(display,0x8F);
+    GC9A01_SendByte(display,0xFF);
+
+
+    GC9A01_SendCommand(display,0xB6);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x00);
+
+    GC9A01_SendCommand(display,0x36);
+
+    switch (orientation)
     {
     case 0:
-        GC9A01_SendByte(0x18);
+        GC9A01_SendByte(display,0x18);
         break;
     case 1:
-        GC9A01_SendByte(0x28);
+        GC9A01_SendByte(display,0x28);
         break;
     case 2:
-        GC9A01_SendByte(0x48);
+        GC9A01_SendByte(display,0x48);
         break;
     case 3:
-        GC9A01_SendByte(0x88);
+        GC9A01_SendByte(display,0x88);
         break;
     default:
         break;
     }
 
-    GC9A01_SendCommand(GC9A01_CMD_COLMOD);
-    GC9A01_SendByte(GC9A01_CMD_COLMOD_18_BIT);
-    
-    GC9A01_SendCommand(0x90);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x08);
-    
-    GC9A01_SendCommand(0xBD);
-    GC9A01_SendByte(0x06);
-    
-    GC9A01_SendCommand(0xBC);
-    GC9A01_SendByte(0x00);
-    
-    GC9A01_SendCommand(0xFF);
-    GC9A01_SendByte(0x60);
-    GC9A01_SendByte(0x01);
-    GC9A01_SendByte(0x04);
-    
-    GC9A01_SendCommand(0xC3);
-    GC9A01_SendByte(0x13);
-    GC9A01_SendCommand(0xC4);
-    GC9A01_SendByte(0x13);
-    
-    GC9A01_SendCommand(0xC9);
-    GC9A01_SendByte(0x22);
-    
-    GC9A01_SendCommand(0xBE);
-    GC9A01_SendByte(0x11);
-    
-    GC9A01_SendCommand(0xE1);
-    GC9A01_SendByte(0x10);
-    GC9A01_SendByte(0x0E);
-    
-    GC9A01_SendCommand(0xDF);
-    GC9A01_SendByte(0x21);
-    GC9A01_SendByte(0x0c);
-    GC9A01_SendByte(0x02);
-    
-    GC9A01_SendCommand(0xF0);
-    GC9A01_SendByte(0x45);
-    GC9A01_SendByte(0x09);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x26);
-    GC9A01_SendByte(0x2A);
+    GC9A01_SendCommand(display,GC9A01_CMD_COLMOD);
+    GC9A01_SendByte(display,GC9A01_CMD_COLMOD_18_BIT);
 
-    GC9A01_SendCommand(0xF1);
-    GC9A01_SendByte(0x43);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x72);
-    GC9A01_SendByte(0x36);
-    GC9A01_SendByte(0x37);
-    GC9A01_SendByte(0x6F);
-    
-    GC9A01_SendCommand(0xF2);
-    GC9A01_SendByte(0x45);
-    GC9A01_SendByte(0x09);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x26);
-    GC9A01_SendByte(0x2A);
-    
-    GC9A01_SendCommand(0xF3);
-    GC9A01_SendByte(0x43);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x72);
-    GC9A01_SendByte(0x36);
-    GC9A01_SendByte(0x37);
-    GC9A01_SendByte(0x6F);
-    
-    GC9A01_SendCommand(0xED);
-    GC9A01_SendByte(0x1B);
-    GC9A01_SendByte(0x0B);
-    
-    GC9A01_SendCommand(0xAE);
-    GC9A01_SendByte(0x77);
-    
-    GC9A01_SendCommand(0xCD);
-    GC9A01_SendByte(0x63);
-    
-    GC9A01_SendCommand(0x70);
-    GC9A01_SendByte(0x07);
-    GC9A01_SendByte(0x07);
-    GC9A01_SendByte(0x04);
-    GC9A01_SendByte(0x0E);
-    GC9A01_SendByte(0x0F);
-    GC9A01_SendByte(0x09);
-    GC9A01_SendByte(0x07);
-    GC9A01_SendByte(0x08);
-    GC9A01_SendByte(0x03);
-    
-    GC9A01_SendCommand(0xE8);
-    GC9A01_SendByte(0x34);
-    
-    GC9A01_SendCommand(0x62);
-    GC9A01_SendByte(0x18);
-    GC9A01_SendByte(0x0D);
-    GC9A01_SendByte(0x71);
-    GC9A01_SendByte(0xED);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x18);
-    GC9A01_SendByte(0x0F);
-    GC9A01_SendByte(0x71);
-    GC9A01_SendByte(0xEF);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x70);
-    
-    GC9A01_SendCommand(0x63);
-    GC9A01_SendByte(0x18);
-    GC9A01_SendByte(0x11);
-    GC9A01_SendByte(0x71);
-    GC9A01_SendByte(0xF1);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x18);
-    GC9A01_SendByte(0x13);
-    GC9A01_SendByte(0x71);
-    GC9A01_SendByte(0xF3);
-    GC9A01_SendByte(0x70);
-    GC9A01_SendByte(0x70);
-    
-    GC9A01_SendCommand(0x64);
-    GC9A01_SendByte(0x28);
-    GC9A01_SendByte(0x29);
-    GC9A01_SendByte(0xF1);
-    GC9A01_SendByte(0x01);
-    GC9A01_SendByte(0xF1);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x07);
-    
-    GC9A01_SendCommand(0x66);
-    GC9A01_SendByte(0x3C);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0xCD);
-    GC9A01_SendByte(0x67);
-    GC9A01_SendByte(0x45);
-    GC9A01_SendByte(0x45);
-    GC9A01_SendByte(0x10);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x00);
-    
-    GC9A01_SendCommand(0x67);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x3C);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x01);
-    GC9A01_SendByte(0x54);
-    GC9A01_SendByte(0x10);
-    GC9A01_SendByte(0x32);
-    GC9A01_SendByte(0x98);
-    
-    GC9A01_SendCommand(0x74);
-    GC9A01_SendByte(0x10);
-    GC9A01_SendByte(0x85);
-    GC9A01_SendByte(0x80);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x00);
-    GC9A01_SendByte(0x4E);
-    GC9A01_SendByte(0x00);
-    
-    GC9A01_SendCommand(0x98);
-    GC9A01_SendByte(0x3e);
-    GC9A01_SendByte(0x07);
-    
-    GC9A01_SendCommand(0x35);
-    GC9A01_SendCommand(0x21);
-    
-    GC9A01_SendCommand(0x11);
+    GC9A01_SendCommand(display,0x90);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x08);
+
+    GC9A01_SendCommand(display,0xBD);
+    GC9A01_SendByte(display,0x06);
+
+    GC9A01_SendCommand(display,0xBC);
+    GC9A01_SendByte(display,0x00);
+
+    GC9A01_SendCommand(display,0xFF);
+    GC9A01_SendByte(display,0x60);
+    GC9A01_SendByte(display,0x01);
+    GC9A01_SendByte(display,0x04);
+
+    GC9A01_SendCommand(display,0xC3);
+    GC9A01_SendByte(display,0x13);
+    GC9A01_SendCommand(display,0xC4);
+    GC9A01_SendByte(display,0x13);
+
+    GC9A01_SendCommand(display,0xC9);
+    GC9A01_SendByte(display,0x22);
+
+    GC9A01_SendCommand(display,0xBE);
+    GC9A01_SendByte(display,0x11);
+
+    GC9A01_SendCommand(display,0xE1);
+    GC9A01_SendByte(display,0x10);
+    GC9A01_SendByte(display,0x0E);
+
+    GC9A01_SendCommand(display,0xDF);
+    GC9A01_SendByte(display,0x21);
+    GC9A01_SendByte(display,0x0c);
+    GC9A01_SendByte(display,0x02);
+
+    GC9A01_SendCommand(display,0xF0);
+    GC9A01_SendByte(display,0x45);
+    GC9A01_SendByte(display,0x09);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x26);
+    GC9A01_SendByte(display,0x2A);
+
+    GC9A01_SendCommand(display,0xF1);
+    GC9A01_SendByte(display,0x43);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x72);
+    GC9A01_SendByte(display,0x36);
+    GC9A01_SendByte(display,0x37);
+    GC9A01_SendByte(display,0x6F);
+
+    GC9A01_SendCommand(display,0xF2);
+    GC9A01_SendByte(display,0x45);
+    GC9A01_SendByte(display,0x09);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x26);
+    GC9A01_SendByte(display,0x2A);
+
+    GC9A01_SendCommand(display,0xF3);
+    GC9A01_SendByte(display,0x43);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x72);
+    GC9A01_SendByte(display,0x36);
+    GC9A01_SendByte(display,0x37);
+    GC9A01_SendByte(display,0x6F);
+
+    GC9A01_SendCommand(display,0xED);
+    GC9A01_SendByte(display,0x1B);
+    GC9A01_SendByte(display,0x0B);
+
+    GC9A01_SendCommand(display,0xAE);
+    GC9A01_SendByte(display,0x77);
+
+    GC9A01_SendCommand(display,0xCD);
+    GC9A01_SendByte(display,0x63);
+
+    GC9A01_SendCommand(display,0x70);
+    GC9A01_SendByte(display,0x07);
+    GC9A01_SendByte(display,0x07);
+    GC9A01_SendByte(display,0x04);
+    GC9A01_SendByte(display,0x0E);
+    GC9A01_SendByte(display,0x0F);
+    GC9A01_SendByte(display,0x09);
+    GC9A01_SendByte(display,0x07);
+    GC9A01_SendByte(display,0x08);
+    GC9A01_SendByte(display,0x03);
+
+    GC9A01_SendCommand(display,0xE8);
+    GC9A01_SendByte(display,0x34);
+
+    GC9A01_SendCommand(display,0x62);
+    GC9A01_SendByte(display,0x18);
+    GC9A01_SendByte(display,0x0D);
+    GC9A01_SendByte(display,0x71);
+    GC9A01_SendByte(display,0xED);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x18);
+    GC9A01_SendByte(display,0x0F);
+    GC9A01_SendByte(display,0x71);
+    GC9A01_SendByte(display,0xEF);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x70);
+
+    GC9A01_SendCommand(display,0x63);
+    GC9A01_SendByte(display,0x18);
+    GC9A01_SendByte(display,0x11);
+    GC9A01_SendByte(display,0x71);
+    GC9A01_SendByte(display,0xF1);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x18);
+    GC9A01_SendByte(display,0x13);
+    GC9A01_SendByte(display,0x71);
+    GC9A01_SendByte(display,0xF3);
+    GC9A01_SendByte(display,0x70);
+    GC9A01_SendByte(display,0x70);
+
+    GC9A01_SendCommand(display,0x64);
+    GC9A01_SendByte(display,0x28);
+    GC9A01_SendByte(display,0x29);
+    GC9A01_SendByte(display,0xF1);
+    GC9A01_SendByte(display,0x01);
+    GC9A01_SendByte(display,0xF1);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x07);
+
+    GC9A01_SendCommand(display,0x66);
+    GC9A01_SendByte(display,0x3C);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0xCD);
+    GC9A01_SendByte(display,0x67);
+    GC9A01_SendByte(display,0x45);
+    GC9A01_SendByte(display,0x45);
+    GC9A01_SendByte(display,0x10);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x00);
+
+    GC9A01_SendCommand(display,0x67);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x3C);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x01);
+    GC9A01_SendByte(display,0x54);
+    GC9A01_SendByte(display,0x10);
+    GC9A01_SendByte(display,0x32);
+    GC9A01_SendByte(display,0x98);
+
+    GC9A01_SendCommand(display,0x74);
+    GC9A01_SendByte(display,0x10);
+    GC9A01_SendByte(display,0x85);
+    GC9A01_SendByte(display,0x80);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x00);
+    GC9A01_SendByte(display,0x4E);
+    GC9A01_SendByte(display,0x00);
+
+    GC9A01_SendCommand(display,0x98);
+    GC9A01_SendByte(display,0x3e);
+    GC9A01_SendByte(display,0x07);
+
+    GC9A01_SendCommand(display,0x35);
+    GC9A01_SendCommand(display,0x21);
+
+    GC9A01_SendCommand(display,0x11);
     HAL_Delay(120);
-    GC9A01_SendCommand(0x29);
+    GC9A01_SendCommand(display,0x29);
     HAL_Delay(20);
 }
 
