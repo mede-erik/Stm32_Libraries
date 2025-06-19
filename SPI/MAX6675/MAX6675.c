@@ -4,6 +4,8 @@
  * @link https://github.com/mede-erik/Stm32_Libraries
  */
 
+#include "MAX6675.h"
+
 HAL_StatusTypeDef MAX6675_Init(MAX6675_HandleTypeDef *hmax6675, SPI_HandleTypeDef *hspi, GPIO_TypeDef *CS_PORT, uint16_t CS_PIN)
 {
     hmax6675->hspi = hspi;
