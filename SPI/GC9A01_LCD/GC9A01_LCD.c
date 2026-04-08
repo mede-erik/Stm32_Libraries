@@ -19,7 +19,7 @@
  * @param data Pointer to the data to be sent.
  * @param size Number of bytes to be sent.
  */
-void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data,size_t len)
+void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data, size_t len)
 {
     // Set DC pin to high for data mode
     HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
@@ -461,12 +461,12 @@ void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uin
     // Set column address
     GC9A01_SendCommand(display, 0x2A);
     uint8_t column_data[] = {x >> 8, x & 0xFF, ((x + 1) >> 8) & 0xFF, (x + 1) & 0xFF};
-    GC9A01_SendData(display, column_data);
+    GC9A01_SendData(display, column_data, sizeof(column_data));
 
     // Set page address
     GC9A01_SendCommand(display, 0x2B);
     uint8_t page_data[] = {y >> 8, y & 0xFF, ((y + 1) >> 8) & 0xFF, (y + 1) & 0xFF};
-    GC9A01_SendData(display, page_data);
+    GC9A01_SendData(display, page_data, sizeof(page_data));
 
     // Memory Write
     GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_WRITE);
@@ -477,8 +477,9 @@ void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uin
     // Set CS pin to low to enable the device
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
 
-    // Send color data for the pixel
-    HAL_SPI_Transmit(display->hspi, (uint8_t *)&color, sizeof(color), HAL_MAX_DELAY);
+    // Send color data for the pixel (big-endian: high byte first)
+    uint8_t color_data[2] = {color >> 8, color & 0xFF};
+    HAL_SPI_Transmit(display->hspi, color_data, 2, HAL_MAX_DELAY);
 
     // Set CS pin to high to disable the device
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
@@ -860,7 +861,6 @@ void UpdateGaugeValue(GC9A01_HandleTypeDef *display, Gauge *gauge, uint16_t newV
  * @param width Width of the image.
  * @param height Height of the image.
  * @param image Pointer to the RGB565 image data (big-endian format).
- * @return 0 if successful, -1 if the image is too large for the display.
  */
 void GC9A01_DrawImage(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t *image)
 {
