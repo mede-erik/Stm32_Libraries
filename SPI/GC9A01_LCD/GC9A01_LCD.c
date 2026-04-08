@@ -9,6 +9,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
+// Helper macro for int16_t absolute value (abs() from stdlib works with int)
+#define ABS16(x) ((int16_t)((x) < 0 ? -(x) : (x)))
 /**
  * @brief Send data to the GC9A01 display.
  *
@@ -51,9 +54,80 @@ void GC9A01_SendCommand(GC9A01_HandleTypeDef *display, uint8_t command)
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
 }
 
-static inline void GC9A01_SendByte(uint8_t val) 
+static inline void GC9A01_SendByte(GC9A01_HandleTypeDef *display, uint8_t val)
 {
-    GC9A01_SendData(&val, sizeof(val));
+    GC9A01_SendData(display, &val, sizeof(val));
+}
+
+/**
+ * @brief Perform hardware reset of the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ */
+void GC9A01_Reset(GC9A01_HandleTypeDef *display)
+{
+    // Perform hardware reset sequence
+    HAL_GPIO_WritePin(display->GC9A01_RESET_PORT, display->GC9A01_RESET_PIN, GPIO_PIN_RESET);
+    HAL_Delay(10); // Hold reset low for 10ms
+    HAL_GPIO_WritePin(display->GC9A01_RESET_PORT, display->GC9A01_RESET_PIN, GPIO_PIN_SET);
+    HAL_Delay(120); // Wait for display to initialize
+}
+
+/**
+ * @brief Set the display rotation/orientation.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param orientation Rotation: 0=0°, 1=90°, 2=180°, 3=270°
+ */
+void GC9A01_SetRotation(GC9A01_HandleTypeDef *display, uint8_t orientation)
+{
+    uint8_t madctl = 0;
+
+    switch (orientation)
+    {
+    case 0: // 0 degrees
+        madctl = 0x18;
+        break;
+    case 1: // 90 degrees
+        madctl = 0x28;
+        break;
+    case 2: // 180 degrees
+        madctl = 0x48;
+        break;
+    case 3: // 270 degrees
+        madctl = 0x88;
+        break;
+    default:
+        return; // Invalid orientation
+    }
+
+    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_ACCESS_CTL);
+    GC9A01_SendByte(display, madctl);
+}
+
+/**
+ * @brief Set the drawing window on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x0 Starting column address
+ * @param y0 Starting page address
+ * @param x1 Ending column address
+ * @param y1 Ending page address
+ */
+void GC9A01_SetWindow(GC9A01_HandleTypeDef *display, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+    // Set column address
+    GC9A01_SendCommand(display, GC9A01_CMD_SET_COLUMN_ADDRESS);
+    uint8_t col_data[] = {x0 >> 8, x0 & 0xFF, x1 >> 8, x1 & 0xFF};
+    GC9A01_SendData(display, col_data, sizeof(col_data));
+
+    // Set page address
+    GC9A01_SendCommand(display, GC9A01_CMD_SET_PAGE_ADDRESS);
+    uint8_t row_data[] = {y0 >> 8, y0 & 0xFF, y1 >> 8, y1 & 0xFF};
+    GC9A01_SendData(display, row_data, sizeof(row_data));
+
+    // Memory write
+    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_WRITE);
 }
 
 /**
@@ -64,18 +138,8 @@ static inline void GC9A01_SendByte(uint8_t val)
  */
 void GC9A01_Clear(GC9A01_HandleTypeDef *display, uint16_t color)
 {
-    // Set column address range
-    GC9A01_SendCommand(display, 0x2A);
-    uint8_t column_data[] = {0x00, 0x00, (display->LCD_width >> 8) & 0xFF, display->LCD_width & 0xFF};
-    GC9A01_SendData(display, column_data);
-
-    // Set page address range
-    GC9A01_SendCommand(display, 0x2B);
-    uint8_t page_data[] = {0x00, 0x00, (display->LCD_height >> 8) & 0xFF, display->LCD_height & 0xFF};
-    GC9A01_SendData(display, page_data);
-
-    // Memory Write
-    GC9A01_SendCommand(display, GC9A01_CMD_MEMORY_WRITE);
+    // Set window to full screen
+    GC9A01_SetWindow(display, 0, 0, display->LCD_width - 1, display->LCD_height - 1);
 
     // Set DC pin to high for data mode
     HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
@@ -86,14 +150,15 @@ void GC9A01_Clear(GC9A01_HandleTypeDef *display, uint16_t color)
     // Send color data to fill the display
     for (uint32_t i = 0; i < (uint32_t)display->LCD_width * display->LCD_height; i++)
     {
-        HAL_SPI_Transmit(display->hspi, (uint8_t *)&color, sizeof(color), HAL_MAX_DELAY);
+        uint8_t color_data[2] = {color >> 8, color & 0xFF}; // High byte first for RGB565
+        HAL_SPI_Transmit(display->hspi, color_data, 2, HAL_MAX_DELAY);
     }
 
     // Set CS pin to high to disable the device
     HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
 }
 
-void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height,int oreientation)
+void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height, int orientation)
 {
     display->hspi = hspi;
     display->GC9A01_CS_PORT = GC9A01_CS_PORT;
@@ -105,7 +170,12 @@ void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_Ty
     display->LCD_height = LCD_height;
     display->LCD_width = LCD_width;
 
-    HAL_SPI_Init(&hspi);
+    // Initialize SPI
+    HAL_SPI_Init(hspi);
+
+    // Perform hardware reset
+    GC9A01_Reset(display);
+
     // Power On Sequence
     HAL_Delay(5); // Wait for power stabilization
 
@@ -161,7 +231,7 @@ void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_Ty
     GC9A01_SendByte(display,0x00);
     GC9A01_SendByte(display,0x00);
 
-    GC9A01_SendCommand(display,0x36);
+    GC9A01_SendCommand(display, 0x36);
 
     switch (orientation)
     {
@@ -427,9 +497,9 @@ void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uin
  */
 void GC9A01_DrawLine(GC9A01_HandleTypeDef *display, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint16_t color)
 {
-    int16_t dx = abs(x2 - x1);
+    int16_t dx = ABS16((int16_t)(x2 - x1));
     int16_t sx = x1 < x2 ? 1 : -1;
-    int16_t dy = -abs(y2 - y1);
+    int16_t dy = -ABS16((int16_t)(y2 - y1));
     int16_t sy = y1 < y2 ? 1 : -1;
     int16_t err = dx + dy; /* error value e_xy */
 
@@ -631,30 +701,43 @@ int GC9A01_DrawText(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, const
     // Calculate the width and height of a single character in the font
     uint8_t char_width = font[0];
     uint8_t char_height = font[1];
+    size_t text_len = strlen(text);
 
     // Check if the entire text fits within the display
-    if ((x + (strlen(text) * char_width) > display->LCD_width) || (y + char_height > display->LCD_height))
+    if ((x + (text_len * char_width) > display->LCD_width) || (y + char_height > display->LCD_height))
     {
         // Text exceeds display boundaries
         return -1;
     }
 
+    // Bytes per character (each pixel is 1 bit)
+    uint8_t bytes_per_char = (char_width * char_height) / 8;
+
     // Iterate through each character in the string
-    for (size_t i = 0; i < strlen(text); i++)
+    for (size_t i = 0; i < text_len; i++)
     {
         // Get the ASCII value of the current character
         uint8_t ascii_value = text[i];
 
+        // Skip characters outside the font range (ASCII 32-127)
+        if (ascii_value < 32 || ascii_value > 127)
+            continue;
+
         // Calculate the starting position of the character in the font data
-        uint32_t char_offset = 2 + (ascii_value * ((char_width * char_height) / 8));
+        // Font starts at ASCII 32 (space), so subtract 32
+        uint16_t char_offset = 2 + ((ascii_value - 32) * bytes_per_char);
 
         // Draw the character on the display
         for (uint8_t row = 0; row < char_height; row++)
         {
             for (uint8_t col = 0; col < char_width; col++)
             {
+                // Calculate byte index and bit position
+                uint8_t byte_idx = char_offset + (row * (char_width / 8) + (col / 8));
+                uint8_t bit_pos = 7 - (col % 8);
+
                 // Extract the pixel value from the font data
-                uint8_t pixel = (font[char_offset + (row * (char_width / 8) + (col / 8))] >> (7 - (col % 8))) & 0x01;
+                uint8_t pixel = (font[byte_idx] >> bit_pos) & 0x01;
 
                 // Draw the pixel on the display
                 if (pixel)
@@ -767,3 +850,139 @@ void UpdateGaugeValue(GC9A01_HandleTypeDef *display, Gauge *gauge, uint16_t newV
     // Disegna il gauge con il nuovo valore
     DrawCustomGauge(display, gauge);
 }
+
+/**
+ * @brief Draw an RGB565 image on the GC9A01 display.
+ *
+ * @param display Pointer to the GC9A01_Display structure.
+ * @param x X coordinate of the top-left corner.
+ * @param y Y coordinate of the top-left corner.
+ * @param width Width of the image.
+ * @param height Height of the image.
+ * @param image Pointer to the RGB565 image data (big-endian format).
+ * @return 0 if successful, -1 if the image is too large for the display.
+ */
+void GC9A01_DrawImage(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t *image)
+{
+    if ((x + width > display->LCD_width) || (y + height > display->LCD_height))
+    {
+        return; // Image exceeds display boundaries
+    }
+
+    // Set window to image area
+    GC9A01_SetWindow(display, x, y, x + width - 1, y + height - 1);
+
+    // Set DC pin to high for data mode
+    HAL_GPIO_WritePin(display->GC9A01_DC_PORT, display->GC9A01_DC_PIN, GPIO_PIN_SET);
+
+    // Set CS pin to low to enable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_RESET);
+
+    // Send image data
+    HAL_SPI_Transmit(display->hspi, (uint8_t *)image, width * height * 2, HAL_MAX_DELAY);
+
+    // Set CS pin to high to disable the device
+    HAL_GPIO_WritePin(display->GC9A01_CS_PORT, display->GC9A01_CS_PIN, GPIO_PIN_SET);
+}
+
+// Font definition
+const uint8_t font_6x8[] = {
+    6, 8, // Width, Height
+
+    // ASCII 32-127
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // (space)
+    0x00, 0x00, 0x5F, 0x00, 0x00, 0x00, // !
+    0x00, 0x03, 0x00, 0x03, 0x00, 0x00, // "
+    0x14, 0x7F, 0x14, 0x7F, 0x14, 0x00, // #
+    0x24, 0x2A, 0x7F, 0x2A, 0x12, 0x00, // $
+    0x23, 0x13, 0x08, 0x64, 0x62, 0x00, // %
+    0x36, 0x49, 0x55, 0x22, 0x50, 0x00, // &
+    0x00, 0x05, 0x03, 0x00, 0x00, 0x00, // '
+    0x00, 0x1C, 0x22, 0x41, 0x00, 0x00, // (
+    0x00, 0x41, 0x22, 0x1C, 0x00, 0x00, // )
+    0x08, 0x2A, 0x1C, 0x2A, 0x08, 0x00, // *
+    0x08, 0x08, 0x3E, 0x08, 0x08, 0x00, // +
+    0x00, 0x50, 0x30, 0x00, 0x00, 0x00, // ,
+    0x08, 0x08, 0x08, 0x08, 0x08, 0x00, // -
+    0x00, 0x60, 0x60, 0x00, 0x00, 0x00, // .
+    0x20, 0x10, 0x08, 0x04, 0x02, 0x00, // /
+    0x3E, 0x51, 0x49, 0x45, 0x3E, 0x00, // 0
+    0x00, 0x04, 0x02, 0x7F, 0x00, 0x00, // 1
+    0x42, 0x61, 0x51, 0x49, 0x46, 0x00, // 2
+    0x22, 0x41, 0x49, 0x49, 0x36, 0x00, // 3
+    0x18, 0x14, 0x12, 0x7F, 0x10, 0x00, // 4
+    0x2F, 0x49, 0x49, 0x49, 0x31, 0x00, // 5
+    0x3C, 0x4A, 0x49, 0x49, 0x30, 0x00, // 6
+    0x01, 0x71, 0x09, 0x05, 0x03, 0x00, // 7
+    0x36, 0x49, 0x49, 0x49, 0x36, 0x00, // 8
+    0x06, 0x49, 0x49, 0x29, 0x1E, 0x00, // 9
+    0x00, 0x36, 0x36, 0x00, 0x00, 0x00, // :
+    0x00, 0x56, 0x36, 0x00, 0x00, 0x00, // ;
+    0x08, 0x14, 0x22, 0x41, 0x00, 0x00, // <
+    0x14, 0x14, 0x14, 0x14, 0x14, 0x00, // =
+    0x00, 0x41, 0x22, 0x14, 0x08, 0x00, // >
+    0x02, 0x01, 0x51, 0x09, 0x06, 0x00, // ?
+    0x3E, 0x41, 0x49, 0x55, 0x5E, 0x00, // @
+    0x7E, 0x11, 0x11, 0x11, 0x7E, 0x00, // A
+    0x7F, 0x49, 0x49, 0x49, 0x36, 0x00, // B
+    0x3E, 0x41, 0x41, 0x41, 0x22, 0x00, // C
+    0x7F, 0x41, 0x41, 0x41, 0x3E, 0x00, // D
+    0x7F, 0x49, 0x49, 0x49, 0x41, 0x00, // E
+    0x7F, 0x09, 0x09, 0x09, 0x01, 0x00, // F
+    0x3E, 0x41, 0x41, 0x49, 0x3A, 0x00, // G
+    0x7F, 0x08, 0x08, 0x08, 0x7F, 0x00, // H
+    0x00, 0x41, 0x7F, 0x41, 0x00, 0x00, // I
+    0x20, 0x40, 0x41, 0x3F, 0x01, 0x00, // J
+    0x7F, 0x08, 0x14, 0x22, 0x41, 0x00, // K
+    0x7F, 0x40, 0x40, 0x40, 0x40, 0x00, // L
+    0x7F, 0x02, 0x0C, 0x02, 0x7F, 0x00, // M
+    0x7F, 0x04, 0x08, 0x10, 0x7F, 0x00, // N
+    0x3E, 0x41, 0x41, 0x41, 0x3E, 0x00, // O
+    0x7F, 0x09, 0x09, 0x09, 0x06, 0x00, // P
+    0x3E, 0x41, 0x51, 0x21, 0x5E, 0x00, // Q
+    0x7F, 0x09, 0x19, 0x29, 0x46, 0x00, // R
+    0x26, 0x49, 0x49, 0x49, 0x32, 0x00, // S
+    0x01, 0x01, 0x7F, 0x01, 0x01, 0x00, // T
+    0x3F, 0x40, 0x40, 0x40, 0x3F, 0x00, // U
+    0x0F, 0x30, 0x40, 0x30, 0x0F, 0x00, // V
+    0x7F, 0x20, 0x10, 0x20, 0x7F, 0x00, // W
+    0x63, 0x14, 0x08, 0x14, 0x63, 0x00, // X
+    0x03, 0x04, 0x78, 0x04, 0x03, 0x00, // Y
+    0x61, 0x51, 0x49, 0x45, 0x43, 0x00, // Z
+    0x7F, 0x41, 0x41, 0x00, 0x00, 0x00, // [
+    0x02, 0x04, 0x08, 0x10, 0x20, 0x00, // \
+    0x41, 0x41, 0x7F, 0x00, 0x00, 0x00, // ]
+    0x04, 0x02, 0x01, 0x02, 0x04, 0x00, // ^
+    0x40, 0x40, 0x40, 0x40, 0x40, 0x40, // _
+    0x00, 0x01, 0x02, 0x04, 0x00, 0x00, // `
+    0x20, 0x54, 0x54, 0x54, 0x78, 0x00, // a
+    0x7F, 0x48, 0x44, 0x44, 0x38, 0x00, // b
+    0x38, 0x44, 0x44, 0x44, 0x20, 0x00, // c
+    0x38, 0x44, 0x44, 0x48, 0x7F, 0x00, // d
+    0x38, 0x54, 0x54, 0x54, 0x18, 0x00, // e
+    0x08, 0x7E, 0x09, 0x01, 0x02, 0x00, // f
+    0x18, 0xA4, 0xA4, 0xA4, 0x7C, 0x00, // g
+    0x7F, 0x08, 0x04, 0x04, 0x78, 0x00, // h
+    0x00, 0x44, 0x7D, 0x40, 0x00, 0x00, // i
+    0x40, 0x80, 0x84, 0x7D, 0x00, 0x00, // j
+    0x7F, 0x10, 0x28, 0x44, 0x00, 0x00, // k
+    0x00, 0x41, 0x7F, 0x40, 0x00, 0x00, // l
+    0x7C, 0x04, 0x18, 0x04, 0x78, 0x00, // m
+    0x7C, 0x08, 0x04, 0x04, 0x78, 0x00, // n
+    0x38, 0x44, 0x44, 0x44, 0x38, 0x00, // o
+    0xFC, 0x24, 0x24, 0x24, 0x18, 0x00, // p
+    0x18, 0x24, 0x24, 0x18, 0xFC, 0x00, // q
+    0x7C, 0x08, 0x04, 0x04, 0x08, 0x00, // r
+    0x48, 0x54, 0x54, 0x54, 0x24, 0x00, // s
+    0x04, 0x3F, 0x44, 0x40, 0x20, 0x00, // t
+    0x3C, 0x40, 0x40, 0x20, 0x7C, 0x00, // u
+    0x1C, 0x20, 0x40, 0x20, 0x1C, 0x00, // v
+    0x3C, 0x40, 0x30, 0x40, 0x3C, 0x00, // w
+    0x44, 0x28, 0x10, 0x28, 0x44, 0x00, // x
+    0x1C, 0xA0, 0xA0, 0xA0, 0x7C, 0x00, // y
+    0x44, 0x64, 0x54, 0x4C, 0x44, 0x00, // z
+    0x00, 0x08, 0x36, 0x41, 0x00, 0x00, // {
+    0x00, 0x00, 0x7F, 0x00, 0x00, 0x00, // |
+    0x00, 0x41, 0x36, 0x08, 0x00, 0x00, // }
+    0x08, 0x08, 0x2A, 0x1C, 0x08, 0x00  // ~
+};

@@ -7,47 +7,21 @@
 #ifndef INC_GC9A01_LCD_H_
 #define INC_GC9A01_LCD_H_
 
-#ifdef STM32F0
-#include "stm32f0xx_hal.h" /* Import HAL library */
-#elif defined(STM32F1)
-#include "stm32f1xx_hal.h" /* Import HAL library */
-#elif defined(STM32F2)
-#include "stm32f2xx_hal.h" /* Import HAL library */
-#elif defined(STM32F3)
-#include "stm32f3xx_hal.h" /* Import HAL library */
-#elif defined(STM32F4)
-#include "stm32f4xx_hal.h" /* Import HAL library */
-#elif defined(STM32F7)
-#include "stm32f7xx_hal.h" /* Import HAL library */
-#elif defined(STM32G0)
-#include "stm32g0xx_hal.h" /* Import HAL library */
-#elif defined(STM32G4)
-#include "stm32g4xx_hal.h" /* Import HAL library */
-#elif defined(STM32H7)
-#include "stm32h7xx_hal.h" /* Import HAL library */
-#elif defined(STM32L0)
-#include "stm32l0xx_hal.h" /* Import HAL library */
-#elif defined(STM32L1)
-#include "stm32l1xx_hal.h" /* Import HAL library */
-#elif defined(STM32L5)
-#include "stm32l5xx_hal.h" /* Import HAL library */
-#elif defined(STM32L4)
-#include "stm32l4xx_hal.h" /* Import HAL library */
-#elif defined(STM32H7)
-#include "stm32h7xx_hal.h" /* Import HAL library */
-#else
-#endif
-
 #include "main.h"
 
 #define GC9A01_CMD_SLEEP_OUT 0x11
 #define GC9A01_CMD_DISPLAY_ON 0x29
+#define GC9A01_CMD_DISPLAY_OFF 0x28
 #define GC9A01_CMD_MEMORY_WRITE 0x2C
 #define GC9A01_CMD_MAC 0x36
 #define GC9A01_CMD_PIXEL_FORMAT 0x3A
 #define GC9A01_CMD_MEMORY_ACCESS_CTL 0x36
 #define GC9A01_CMD_COLMOD 0x3A
 #define GC9A01_CMD_COLMOD_18_BIT  0x06
+#define GC9A01_CMD_COLMOD_16_BIT  0x05
+#define GC9A01_CMD_SET_COLUMN_ADDRESS 0x2A
+#define GC9A01_CMD_SET_PAGE_ADDRESS 0x2B
+#define GC9A01_CMD_SOFTWARE_RESET 0x01
 #define GC9A01_COLOR_RED 0xF800
 #define GC9A01_COLOR_GREEN 0x07E0
 #define GC9A01_COLOR_BLUE 0x001Fa
@@ -73,7 +47,9 @@ typedef struct
     uint16_t LCD_height;
 } GC9A01_HandleTypeDef;
 
-const uint8_t font_6x8[] = {
+extern const uint8_t font_6x8[];
+
+static const uint8_t font_6x8_data[] = {
     6, 8, // Width, Height
 
     // ASCII 32-127
@@ -174,6 +150,8 @@ const uint8_t font_6x8[] = {
     0x08, 0x08, 0x2A, 0x1C, 0x08, 0x00  // ~
 };
 
+#define font_6x8 font_6x8_data
+
 typedef struct
 {
     int16_t x;             // Posizione x del centro del gauge
@@ -188,10 +166,14 @@ typedef struct
     const char *unit;      // Unità di misura
 } Gauge;
 
-void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data,size_t len)
+void GC9A01_SendData(GC9A01_HandleTypeDef *display, uint8_t *data, size_t len);
 void GC9A01_SendCommand(GC9A01_HandleTypeDef *display, uint8_t command);
+void GC9A01_Reset(GC9A01_HandleTypeDef *display);
 void GC9A01_Clear(GC9A01_HandleTypeDef *display, uint16_t color);
-void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height,int oreientation);
+void GC9A01_Init(GC9A01_HandleTypeDef *display, SPI_HandleTypeDef *hspi, GPIO_TypeDef *GC9A01_DC_PORT, uint16_t GC9A01_DC_PIN, GPIO_TypeDef *GC9A01_CS_PORT, uint16_t GC9A01_CS_PIN, GPIO_TypeDef *GC9A01_RESET_PORT, uint16_t GC9A01_RESET_PIN, uint16_t LCD_width, uint16_t LCD_height, int orientation);
+void GC9A01_SetRotation(GC9A01_HandleTypeDef *display, uint8_t orientation);
+void GC9A01_SetWindow(GC9A01_HandleTypeDef *display, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+void GC9A01_DrawImage(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t *image);
 uint16_t RGB_to_RGB565(uint8_t red, uint8_t green, uint8_t blue);
 void GC9A01_DrawPixel(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t color);
 int GC9A01_DrawRectangle(GC9A01_HandleTypeDef *display, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color);
