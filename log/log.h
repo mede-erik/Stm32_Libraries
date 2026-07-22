@@ -5,8 +5,9 @@
  * @version 0v1
  */
 
+#ifndef LOG_H
+#define LOG_H
 
- 
 #include "main.h"
 #include <string.h>
 #include <stdio.h>
@@ -45,3 +46,5 @@ void LOG_print_debug(LOG_HandleTypeDef logHandle, char msg[25]);
 void LOG_print_error(LOG_HandleTypeDef logHandle, char msg[25]);
 
 void LOG_print_fault(LOG_HandleTypeDef logHandle, char msg[25]);
+
+#endif /* LOG_H */

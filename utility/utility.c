@@ -88,7 +88,7 @@ uint8_t uint16_to_uint8_down_bits(uint16_t a)
 {
 	uint8_t b;
 
-	b = (uint8_t)(a >> 8);
+	b = (uint8_t)(a & 0xFF);
 
 	return b;
 }

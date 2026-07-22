@@ -4,7 +4,8 @@
  * @link https://github.com/mede-erik/Stm32_Libraries
  */
 
-
+#ifndef ST7735_LCD_H
+#define ST7735_LCD_H
 
 #define ST7735_SWRESET 0x01
 #define ST7735_SLPOUT 0x11
@@ -26,3 +27,5 @@
 #define ST7735_GMCTRN1 0xE1
 #define ST7735_NORON 0x13
 #define ST7735_DISPON 0x29
+
+#endif /* ST7735_LCD_H */

@@ -29,8 +29,13 @@ HAL_StatusTypeDef INA228_Init(INA228_HandleTypeDef *hina228, I2C_HandleTypeDef *
     hina228->rShuntValue = rShuntValue;
     hina228->iMax = iMax;
 
+    hina228->shuntVoltageLSB = 312.5e-9f;
+    hina228->busVoltageLSB = 3.125e-3f;
+    hina228->currentLSB = iMax / 524288.0f;
+    hina228->powerLSB = 32.0f * hina228->currentLSB;
+
     // Calculation of calibration value
-    hina228->calibrationValue = (uint16_t)(0.00512 / (hina228->rShuntValue * (1 << hina228->average)));
+    hina228->calibrationValue = (uint16_t)(0.00512f / (hina228->currentLSB * hina228->rShuntValue));
 
     if (INA228_Reset(hina228) != HAL_OK)
     {

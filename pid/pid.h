@@ -5,6 +5,9 @@
  * @version 0v1
  */
 
+#ifndef PID_H
+#define PID_H
+
 #include "main.h"
 
 #define MAX_INT 16777216
@@ -32,3 +35,5 @@ typedef struct
 void PID_init(PID_t *pid, float Kp, float Ki, float Kd, float setPoint);
 
 float PID_calculate(PID_t *pid, float input);
+
+#endif /* PID_H */

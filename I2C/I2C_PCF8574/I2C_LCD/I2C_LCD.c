@@ -296,7 +296,7 @@ void lcd16x2_i2c_printf(const char *str, ...)
     char stringArray[20];
     va_list args;
     va_start(args, str);
-    vsprintf(stringArray, str, args);
+    vsnprintf(stringArray, sizeof(stringArray), str, args);
     va_end(args);
     for (uint8_t i = 0; i < strlen(stringArray) && i < 16; i++)
     {

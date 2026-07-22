@@ -5,36 +5,8 @@
  * @version 0v1
  */
 
-#ifdef STM32F0
-#include "stm32f0xx_hal.h" /* Import HAL library */
-#elif defined(STM32F1)
-#include "stm32f1xx_hal.h" /* Import HAL library */
-#elif defined(STM32F2)
-#include "stm32f2xx_hal.h" /* Import HAL library */
-#elif defined(STM32F3)
-#include "stm32f3xx_hal.h" /* Import HAL library */
-#elif defined(STM32F4)
-#include "stm32f4xx_hal.h" /* Import HAL library */
-#elif defined(STM32F7)
-#include "stm32f7xx_hal.h" /* Import HAL library */
-#elif defined(STM32G0)
-#include "stm32g0xx_hal.h" /* Import HAL library */
-#elif defined(STM32G4)
-#include "stm32g4xx_hal.h" /* Import HAL library */
-#elif defined(STM32H7)
-#include "stm32h7xx_hal.h" /* Import HAL library */
-#elif defined(STM32L0)
-#include "stm32l0xx_hal.h" /* Import HAL library */
-#elif defined(STM32L1)
-#include "stm32l1xx_hal.h" /* Import HAL library */
-#elif defined(STM32L5)
-#include "stm32l5xx_hal.h" /* Import HAL library */
-#elif defined(STM32L4)
-#include "stm32l4xx_hal.h" /* Import HAL library */
-#elif defined(STM32H7)
-#include "stm32h7xx_hal.h" /* Import HAL library */
-#else
-#endif
+#ifndef INA228_H
+#define INA228_H
 
 #include "main.h"
 
@@ -89,6 +61,10 @@ typedef struct
     float rShuntValue;
     float iMax;
     uint16_t calibrationValue;
+    float shuntVoltageLSB;
+    float busVoltageLSB;
+    float currentLSB;
+    float powerLSB;
 } INA228_HandleTypeDef;
 
 HAL_StatusTypeDef INA228_Init(INA228_HandleTypeDef *hina228, I2C_HandleTypeDef *hi2c, uint16_t addr, uint16_t average, uint16_t busConvTime, uint16_t shuntConvTime, uint16_t mode, float rShuntValue, float iMax);
@@ -98,3 +74,5 @@ HAL_StatusTypeDef INA228_ReadShuntVoltage(INA228_HandleTypeDef *hina228, float *
 HAL_StatusTypeDef INA228_ReadCurrent(INA228_HandleTypeDef *hina228, float *current);
 HAL_StatusTypeDef INA228_ReadPower(INA228_HandleTypeDef *hina228, float *power);
 HAL_StatusTypeDef INA228_ReadBusVoltage(INA228_HandleTypeDef *hina228, float *voltage);
+
+#endif /* INA228_H */
